@@ -37,74 +37,14 @@ export const DEFAULT_BACKGROUNDS = [
   },
 ];
 
-export const DEFAULT_BIRTHDAYS = [
-  {
-    name: "Sarah Johnson",
-    date: "July 8",
-    days: 4,
-    color: "bg-gradient-to-r from-pink-500 to-rose-500",
-  },
-  {
-    name: "Mom 💝",
-    date: "July 15",
-    days: 11,
-    color: "bg-gradient-to-r from-purple-500 to-indigo-500",
-  },
-  {
-    name: "Alex Chen",
-    date: "July 22",
-    days: 18,
-    color: "bg-gradient-to-r from-blue-500 to-cyan-500",
-  },
-];
-
-export const DEFAULT_QUICK_LINKS = [
-  {
-    name: "Gmail",
-    icon: "📧",
-    url: "https://gmail.com",
-    color: "from-red-500 to-red-600",
-  },
-  {
-    name: "Calendar",
-    icon: "📅",
-    url: "https://calendar.google.com",
-    color: "from-blue-500 to-blue-600",
-  },
-  {
-    name: "GitHub",
-    icon: "🐙",
-    url: "https://github.com",
-    color: "from-gray-800 to-black",
-  },
-  {
-    name: "Notion",
-    icon: "📝",
-    url: "https://notion.so",
-    color: "from-gray-700 to-gray-800",
-  },
-  {
-    name: "Spotify",
-    icon: "🎵",
-    url: "https://spotify.com",
-    color: "from-green-500 to-green-600",
-  },
-  {
-    name: "LinkedIn",
-    icon: "💼",
-    url: "https://linkedin.com",
-    color: "from-blue-600 to-blue-700",
-  },
-];
-
-export const DEFAULT_NOTES =
-  "• Team standup at 10 AM\n• Review Q3 roadmap\n• Coffee with Sarah at 3 PM\n• Gym session after work";
-
 export const STORAGE_KEYS = {
-  NOTES: "daily_notes",
-  BIRTHDAYS: "birthdays",
-  QUICK_LINKS: "quick_links",
-  ACTIVE_BACKGROUND: "active_background",
-  AUTO_CHANGE_BACKGROUND: "auto_change_background",
-  BACKGROUNDS: "backgrounds",
+  IMPORTANT_DATES: "zenTab_important_dates",
+  QUICK_LINKS: "zenTab_quick_links",
+  ACTIVE_BACKGROUND: "zenTab_active_background",
+  AUTO_CHANGE_BACKGROUND: "zenTab_auto_change_background",
+  BACKGROUNDS: "zenTab_backgrounds",
+  NOTES: "zenTab_daily_notes",
+  TASKS: "zenTab_tasks",
+  WEATHER_DATA: "zenTab_weather_data",
+  LOCATION: "zenTab_location",
 } as const;

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp, Calendar, Heart, Star, Download, Upload, FileText } from 'lucide-react';
+import { STORAGE_KEYS } from '../utils/constants';
 
 interface ImportantDate {
   id: string;
@@ -9,9 +10,6 @@ interface ImportantDate {
   days: number;
   color: string;
 }
-
-// Chrome storage helper
-const DATES_STORAGE_KEY = 'zenTab_importantDates';
 
 // Declare chrome types
 declare const chrome: any;
@@ -131,9 +129,9 @@ const ImportantDatesManager: React.FC = () => {
   const loadDates = async () => {
     try {
       if (typeof chrome !== 'undefined' && chrome.storage) {
-        chrome.storage.sync.get([DATES_STORAGE_KEY], (result: any) => {
-          if (result[DATES_STORAGE_KEY]) {
-            const loadedDates = result[DATES_STORAGE_KEY].map((date: ImportantDate) => ({
+        chrome.storage.sync.get([STORAGE_KEYS.IMPORTANT_DATES], (result: any) => {
+          if (result[STORAGE_KEYS.IMPORTANT_DATES]) {
+            const loadedDates = result[STORAGE_KEYS.IMPORTANT_DATES].map((date: ImportantDate) => ({
               ...date,
               days: calculateDaysUntilDate(date.date)
             })).sort((a: ImportantDate, b: ImportantDate) => a.days - b.days);
@@ -154,7 +152,7 @@ const ImportantDatesManager: React.FC = () => {
   const saveDates = (datesToSave: ImportantDate[]) => {
     try {
       if (typeof chrome !== 'undefined' && chrome.storage) {
-        chrome.storage.sync.set({ [DATES_STORAGE_KEY]: datesToSave });
+        chrome.storage.sync.set({ [STORAGE_KEYS.IMPORTANT_DATES]: datesToSave });
       }
       // Note: No localStorage fallback as per artifact requirements
     } catch (error) {
@@ -400,7 +398,7 @@ const ImportantDatesManager: React.FC = () => {
             📅
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-white drop-shadow-lg [text-shadow:_0_2px_8px_rgb(0_0_0_/_40%)]">Dates</h2>
+            <h2 className="text-xl font-semibold text-white drop-shadow-lg [text-shadow:_0_2px_8px_rgb(0_0_0_/_40%)]">My Dates</h2>
             {getUpcomingDatesCount() > 0 ? (
               <div className="text-white/60 text-xs drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
                 {getUpcomingDatesCount()} coming up this month

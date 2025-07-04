@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MapPin, RefreshCw, Settings, Clock, Sunrise, Sun, Sunset, Moon } from 'lucide-react';
+import { STORAGE_KEYS } from '../utils/constants';
 
 interface WeatherData {
   temperature: number;
@@ -22,8 +23,6 @@ interface TimeWeatherProps {
   onWeatherUpdate?: (weatherData: WeatherData | null) => void;
 }
 
-const WEATHER_STORAGE_KEY = 'zenTab_weather_data';
-const LOCATION_STORAGE_KEY = 'zenTab_location';
 const WEATHER_API_KEY = '85fe6fb8c8f845d79c5101056250407';
 
 const TimeWeather: React.FC<TimeWeatherProps> = ({ onWeatherUpdate }) => {
@@ -120,17 +119,38 @@ const TimeWeather: React.FC<TimeWeatherProps> = ({ onWeatherUpdate }) => {
 
   const loadSavedData = async (): Promise<void> => {
     try {
-      // Using React state only (no localStorage per artifact requirements)
+      // Load saved weather data
+      const savedWeather = localStorage.getItem(STORAGE_KEYS.WEATHER_DATA);
+      if (savedWeather) {
+        const weatherData = JSON.parse(savedWeather);
+        // Only use saved weather if it's less than 15 minutes old
+        if (Date.now() - weatherData.lastUpdated < 15 * 60 * 1000) {
+          console.log('Loading cached weather data');
+          setWeather(weatherData);
+        } else {
+          console.log('Weather data expired, will fetch fresh data');
+        }
+      }
+
+      // Load saved location data
+      const savedLocation = localStorage.getItem(STORAGE_KEYS.LOCATION);
+      if (savedLocation) {
+        const locationData = JSON.parse(savedLocation);
+        console.log('Loading saved location:', locationData);
+        setLocation(locationData);
+      }
+
       setIsLoading(false);
     } catch (error) {
       console.error('Error loading saved data:', error);
+      setIsLoading(false);
     }
   };
 
   const saveData = (key: string, data: any): void => {
     try {
-      // Note: No storage per artifact requirements
-      console.log('Data would be saved:', key, data);
+      localStorage.setItem(key, JSON.stringify(data));
+      console.log(`Saved ${key}:`, data);
     } catch (error) {
       console.error('Error saving data:', error);
     }
@@ -168,7 +188,7 @@ const TimeWeather: React.FC<TimeWeatherProps> = ({ onWeatherUpdate }) => {
           };
           
           setLocation(locationData);
-          saveData(LOCATION_STORAGE_KEY, locationData);
+          saveData(STORAGE_KEYS.LOCATION, locationData);
           
           const weatherData: WeatherData = {
             temperature: Math.round(data.current.temp_c),
@@ -182,7 +202,7 @@ const TimeWeather: React.FC<TimeWeatherProps> = ({ onWeatherUpdate }) => {
           };
 
           setWeather(weatherData);
-          saveData(WEATHER_STORAGE_KEY, weatherData);
+          saveData(STORAGE_KEYS.WEATHER_DATA, weatherData);
         } catch (error) {
           console.error('Error getting location:', error);
           setError('Failed to get location information');
@@ -223,7 +243,7 @@ const TimeWeather: React.FC<TimeWeatherProps> = ({ onWeatherUpdate }) => {
         };
 
         setLocation(locationData);
-        saveData(LOCATION_STORAGE_KEY, locationData);
+        saveData(STORAGE_KEYS.LOCATION, locationData);
         await fetchWeather(locationData.lat, locationData.lon);
         setManualCity('');
         setShowSettings(false);
@@ -266,7 +286,7 @@ const TimeWeather: React.FC<TimeWeatherProps> = ({ onWeatherUpdate }) => {
 
       console.log('Weather data fetched successfully:', weatherData);
       setWeather(weatherData);
-      saveData(WEATHER_STORAGE_KEY, weatherData);
+      saveData(STORAGE_KEYS.WEATHER_DATA, weatherData);
       setError('');
     } catch (error) {
       console.error('Error fetching weather:', error);
@@ -355,7 +375,7 @@ const TimeWeather: React.FC<TimeWeatherProps> = ({ onWeatherUpdate }) => {
         
         <button
           onClick={() => setShowSettings(!showSettings)}
-          className="absolute top-2 right-2 p-1 text-white/60 hover:text-white/90 transition-colors drop-shadow-lg"
+          className="absolute top-2 right-2 p-1 text-white/60 hover:text-white/90 transition-colors drop-shadow-lg z-[10]"
           title="Weather settings"
         >
           <Settings size={14} />
@@ -407,7 +427,7 @@ const TimeWeather: React.FC<TimeWeatherProps> = ({ onWeatherUpdate }) => {
 
         {/* Compact Settings Panel */}
         {showSettings && (
-          <div className="absolute top-full right-0 mt-2 w-72 backdrop-blur-xl bg-black/60 border border-white/30 rounded-xl p-3 shadow-2xl z-[100]">
+          <div className="absolute top-full right-0 mt-2 w-72 backdrop-blur-xl bg-black/90 border border-white/30 rounded-xl p-3 shadow-2xl z-[100]">
             <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-xl"></div>
             
             <div className="relative">

@@ -31,7 +31,7 @@ const BackgroundSelector: React.FC<BackgroundSelectorProps> = ({
       </h3>
       
       <div className="grid grid-cols-2 gap-2">
-        {backgrounds.slice(0, 4).map((bg, index) => (
+        {backgrounds.map((bg, index) => (
           <button
             key={index}
             onClick={() => onBackgroundChange(index)}

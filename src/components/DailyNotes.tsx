@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FileText, RotateCcw, CheckSquare, Square, Plus, Edit3 } from 'lucide-react';
+import { STORAGE_KEYS } from '../utils/constants';
 
 interface Task {
   id: string;
@@ -14,23 +15,76 @@ const TabbedTasksNotes: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ActiveTab>('tasks');
   const [tasks, setTasks] = useState<Task[]>([]);
   const [notes, setNotes] = useState<string>('');
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [lastSaved, setLastSaved] = useState<Date>(new Date());
   const [newTaskText, setNewTaskText] = useState<string>('');
   const [showTaskInput, setShowTaskInput] = useState<boolean>(false);
   const taskInputRef = useRef<HTMLInputElement>(null);
   const notesRef = useRef<HTMLTextAreaElement>(null);
 
+  // Load data on mount
+  useEffect(() => {
+    loadData();
+  }, []);
+
   // Auto-save notes with debounce
   useEffect(() => {
     if (!isLoading) {
       const saveTimer = setTimeout(() => {
+        saveNotes(notes);
         setLastSaved(new Date());
       }, 1000);
       
       return () => clearTimeout(saveTimer);
     }
   }, [notes, isLoading]);
+
+  // Auto-save tasks whenever tasks change
+  useEffect(() => {
+    if (!isLoading) {
+      saveTasks(tasks);
+      if (tasks.length > 0) {
+        setLastSaved(new Date());
+      }
+    }
+  }, [tasks, isLoading]);
+
+  const loadData = async (): Promise<void> => {
+    try {
+      // Load tasks
+      const storedTasks = localStorage.getItem(STORAGE_KEYS.TASKS);
+      if (storedTasks) {
+        setTasks(JSON.parse(storedTasks));
+      }
+
+      // Load notes with default fallback - using correct storage key
+      const storedNotes = localStorage.getItem(STORAGE_KEYS.NOTES);
+      if (storedNotes) {
+        setNotes(storedNotes);
+      }
+
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error loading data:', error);
+      setIsLoading(false);
+    }
+  };
+
+  const saveTasks = (tasksToSave: Task[]): void => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(tasksToSave));
+    } catch (error) {
+      console.error('Error saving tasks:', error);
+    }
+  };
+
+  const saveNotes = (notesToSave: string): void => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.NOTES, notesToSave);
+    } catch (error) {
+      console.error('Error saving notes:', error);
+    }
+  };
 
   const addTask = (): void => {
     if (!newTaskText.trim()) return;
@@ -42,29 +96,31 @@ const TabbedTasksNotes: React.FC = () => {
       createdAt: Date.now()
     };
 
-    setTasks(prev => [...prev, newTask]);
+    const updatedTasks = [...tasks, newTask];
+    setTasks(updatedTasks);
     setNewTaskText('');
     setShowTaskInput(false);
   };
 
   const toggleTask = (taskId: string): void => {
-    setTasks(prev => 
-      prev.map(task => 
-        task.id === taskId 
-          ? { ...task, completed: !task.completed }
-          : task
-      )
+    const updatedTasks = tasks.map(task => 
+      task.id === taskId 
+        ? { ...task, completed: !task.completed }
+        : task
     );
+    setTasks(updatedTasks);
   };
 
   const deleteTask = (taskId: string): void => {
-    setTasks(prev => prev.filter(task => task.id !== taskId));
+    const updatedTasks = tasks.filter(task => task.id !== taskId);
+    setTasks(updatedTasks);
   };
 
   const clearCompleted = (): void => {
     const completedCount = tasks.filter(task => task.completed).length;
     if (completedCount > 0 && confirm(`Delete ${completedCount} completed task${completedCount > 1 ? 's' : ''}?`)) {
-      setTasks(prev => prev.filter(task => !task.completed));
+      const updatedTasks = tasks.filter(task => !task.completed);
+      setTasks(updatedTasks);
     }
   };
 
@@ -251,7 +307,7 @@ const TabbedTasksNotes: React.FC = () => {
                   {tasks.map((task) => (
                     <div 
                       key={task.id}
-                      className="group flex items-center justify-between px-3 py-1 rounded-xl hover:bg-white/5 transition-colors"
+                      className="group flex items-center justify-between px-4 py-0.5 rounded-xl hover:bg-white/5 transition-colors"
                     >
                       <div className="flex items-center space-x-4 flex-1 min-w-0">
                         <button
@@ -365,7 +421,6 @@ const TabbedTasksNotes: React.FC = () => {
         ) : (
           /* Notes Content */
           <div className="flex-1 flex flex-col relative">
-            {/* Always visible textarea */}
             <textarea 
               ref={notesRef}
               value={notes}
