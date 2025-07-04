@@ -23,9 +23,13 @@ npm run build:popup
 # Build for side panel mode (Chrome 114+)
 npm run build:sidepanel
 
+# Build for new tab mode
+npm run build:newtab
+
 # Development mode with file watching
 npm run dev:popup        # Popup mode
 npm run dev:sidepanel    # Side panel mode
+npm run dev:newtab       # New tab mode
 ```
 
 ## 📁 Project Structure
@@ -33,26 +37,29 @@ npm run dev:sidepanel    # Side panel mode
 ```
 chrome-extension-react-scaffold/
 ├── configs/
-│   ├── manifest.popup.json      # Popup mode manifest
-│   └── manifest.sidepanel.json  # Side panel mode manifest
+│   ├── manifest.newtab.json            # New Tab mode manifest
+│   ├── manifest.popup.json             # Popup mode manifest
+│   └── manifest.sidepanel.json         # Side panel mode manifest
 ├── src/
 │   ├── app/
-│   │   ├── index.tsx            # React entry point
-│   │   ├── Counter.tsx            # Main Counter component (dynamic)
-│   │   ├── app.popup.html     # Popup mode HTML
-│   │   ├── app.sidepanel.html # Side panel mode HTML
-│   │   └── styles.css           # Tailwind CSS
+│   │   ├── index.tsx                   # React entry point
+│   │   ├── Counter.tsx                 # Main Counter component (dynamic)
+│   │   ├── app.newtab.html             # Newtab mode HTML
+│   │   ├── app.popup.html              # Popup mode HTML
+│   │   ├── app.sidepanel.html          # Side panel mode HTML
+│   │   └── styles.css                  # Tailwind CSS
 │   ├── background/
-│   │   ├── background.popup.ts    # Popup mode background script
-│   │   └── background.sidepanel.ts # Side panel mode background script
+│   │   ├── background.newtab.ts        # Newtab mode background script
+│   │   ├── background.popup.ts         # Popup mode background script
+│   │   └── background.sidepanel.ts     # Side panel mode background script
 │   ├── content/
-│   │   └── content.ts           # Content script (shared)
+│   │   └── content.ts                  # Content script (shared)
 │   ├── types/
-│   │   └── global.d.ts          # Chrome API type definitions
-│   └── icons/                   # Extension icons
-├── dist/                        # Build output (generated)
+│   │   └── global.d.ts                 # Chrome API type definitions
+│   └── icons/                          # Extension icons
+├── dist/                               # Build output (generated)
 ├── package.json
-├── webpack.config.js            # Dynamic webpack config
+├── webpack.config.js                   # Dynamic webpack config
 ├── tsconfig.json
 ├── tailwind.config.js
 └── README.md
@@ -62,12 +69,14 @@ chrome-extension-react-scaffold/
 
 | Command | Description |
 |---------|-------------|
-| `npm run build:popup` | Build for popup mode |
-| `npm run build:sidepanel` | Build for side panel mode |
+| `npm run dev` | Development with default mode (popup) |
 | `npm run dev:popup` | Development mode - popup |
+| `npm run dev:newtab` | Development mode - newtab |
 | `npm run dev:sidepanel` | Development mode - side panel |
 | `npm run build` | Build with default mode (popup) |
-| `npm run dev` | Development with default mode (popup) |
+| `npm run build:popup` | Build for popup mode |
+| `npm run build:sidepanel` | Build for side panel mode |
+| `npm run build:newtab` | Build for new tab mode |
 | `npm run clean` | Clean dist directory |
 | `npm run zip` | Build and create extension.zip |
 | `npm run type-check` | Run TypeScript type checking |
