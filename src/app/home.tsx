@@ -11,8 +11,8 @@ import {
 import TimeWeather from '../components/TimeWeather';
 import BirthdayManager from '../components/Birthdays';
 import DailyNotes from '../components/DailyNotes';
-import QuickLinks from '../components/QuickLinks';
 import BackgroundSelector from '../components/BGSelector';
+import QuickLinksManager from '../components/QuickLinks';
 
 const Home: React.FC = () => {
   const currentTime = useTime();
@@ -98,11 +98,7 @@ const Home: React.FC = () => {
 
           {/* Right Column - Quick Links & Controls (25%) */}
           <div className="col-span-3 space-y-6">
-            <QuickLinks 
-              quickLinks={quickLinks}
-              onAddLink={handleAddLink}
-              onLinkClick={handleLinkClick}
-            />
+            <QuickLinksManager />
 
             <BackgroundSelector 
               backgrounds={backgrounds}
