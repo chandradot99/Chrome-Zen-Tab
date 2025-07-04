@@ -15,6 +15,7 @@ declare namespace chrome {
         ) => void
       ): void;
     };
+    export function getURL(path: string): string;
   }
 
   export namespace tabs {
@@ -56,16 +57,45 @@ declare namespace chrome {
       tabId?: number;
     }): void;
   }
-}
 
-// Process environment for webpack DefinePlugin
-declare namespace NodeJS {
-  interface ProcessEnv {
-    EXTENSION_MODE?: string;
+  export namespace notifications {
+    export interface NotificationOptions {
+      type: string;
+      iconUrl: string;
+      title: string;
+      message: string;
+      buttons?: Array<{ title: string }>;
+    }
+
+    export function create(
+      notificationId: string,
+      options: NotificationOptions,
+      callback?: (notificationId: string) => void
+    ): void;
+
+    export function clear(
+      notificationId: string,
+      callback?: (wasCleared: boolean) => void
+    ): void;
+
+    export const onClicked: {
+      addListener(callback: (notificationId: string) => void): void;
+    };
+
+    export const onButtonClicked: {
+      addListener(
+        callback: (notificationId: string, buttonIndex: number) => void
+      ): void;
+    };
   }
 }
 
-// Make process available in browser context
+// Process environment for webpack DefinePlugin
 declare const process: {
-  env: NodeJS.ProcessEnv;
+  env: {
+    NODE_ENV?: string;
+  };
 };
+
+// Make chrome available globally
+declare const chrome: typeof chrome;

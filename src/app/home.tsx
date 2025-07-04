@@ -9,7 +9,7 @@ import {
   STORAGE_KEYS 
 } from './../utils/constants';
 import TimeWeather from '../components/TimeWeather';
-import Birthdays from '../components/Birthdays';
+import BirthdayManager from '../components/Birthdays';
 import DailyNotes from '../components/DailyNotes';
 import QuickLinks from '../components/QuickLinks';
 import BackgroundSelector from '../components/BGSelector';
@@ -84,9 +84,7 @@ const Home: React.FC = () => {
           
           {/* Left Column - Birthdays (25%) */}
           <div className="col-span-3">
-            <Birthdays 
-              birthdays={birthdays}
-              onAddBirthday={handleAddBirthday}
+            <BirthdayManager 
             />
           </div>
 
