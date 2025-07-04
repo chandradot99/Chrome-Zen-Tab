@@ -12,7 +12,7 @@ interface StorageData {
   isHighlighting?: boolean;
 }
 
-const Popup: React.FC = () => {
+const Counter: React.FC = () => {
   const [tabInfo, setTabInfo] = useState<TabInfo>({});
   const [count, setCount] = useState<number>(0);
   const [mode, setMode] = useState<string>('popup');
@@ -347,4 +347,4 @@ const Popup: React.FC = () => {
   );
 };
 
-export default Popup;
+export default Counter;

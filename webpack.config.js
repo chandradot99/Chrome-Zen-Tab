@@ -12,7 +12,7 @@ module.exports = (env, argv) => {
 
   return {
     entry: {
-      popup: "./src/popup/index.tsx",
+      index: "./src/app/index.tsx",
       background: `./src/background/background.${mode}.ts`,
       content: "./src/content/content.ts",
     },
@@ -44,9 +44,9 @@ module.exports = (env, argv) => {
     },
     plugins: [
       new HtmlWebpackPlugin({
-        template: `./src/popup/popup.${mode}.html`,
-        filename: "popup.html",
-        chunks: ["popup"],
+        template: `./src/app/app.${mode}.html`,
+        filename: "index.html",
+        chunks: ["index"],
       }),
       new CopyWebpackPlugin({
         patterns: [
