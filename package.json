@@ -6,10 +6,12 @@
   "scripts": {
     "dev": "webpack --mode development --watch --env MODE=popup",
     "dev:popup": "webpack --mode development --watch --env MODE=popup",
+    "dev:newtab": "webpack --mode development --watch --env MODE=newtab",
     "dev:sidepanel": "webpack --mode development --watch --env MODE=sidepanel",
     "build": "webpack --mode production --env MODE=popup",
     "build:popup": "webpack --mode production --env MODE=popup",
     "build:sidepanel": "webpack --mode production --env MODE=sidepanel",
+    "build:newtab": "webpack --mode production --env MODE=newtab",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf dist",
     "zip": "npm run clean && npm run build && cd dist && zip -r ../extension.zip ."

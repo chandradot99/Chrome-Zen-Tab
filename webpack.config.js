@@ -1,6 +1,7 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
+const Webpack = require("webpack");
 
 module.exports = (env, argv) => {
   // Determine mode: popup (default) or sidepanel
@@ -65,6 +66,9 @@ module.exports = (env, argv) => {
             noErrorOnMissing: true,
           },
         ],
+      }),
+      new Webpack.DefinePlugin({
+        "process.env.EXTENSION_MODE": JSON.stringify(mode),
       }),
     ],
     devtool: isProduction ? false : "cheap-module-source-map",

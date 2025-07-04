@@ -21,8 +21,11 @@ const Counter: React.FC = () => {
   const [isHighlighting, setIsHighlighting] = useState<boolean>(false);
 
   useEffect(() => {
-    // Get current tab information
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    const currentMode = process.env.EXTENSION_MODE || 'popup';
+    setMode(currentMode);
+
+    if(currentMode !== "newtab") {
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0]) {
         setTabInfo({
           url: tabs[0].url,
@@ -30,11 +33,13 @@ const Counter: React.FC = () => {
         });
       }
     });
+    }
+
+    // Get current tab information
 
     // Load saved data from storage
     chrome.storage.sync.get(['count', 'mode', 'savedPages', 'isHighlighting'], (result: StorageData) => {
       setCount(result.count || 0);
-      setMode(result.mode || 'popup');
       setSavedPages(result.savedPages || []);
       setIsHighlighting(result.isHighlighting || false);
     });
@@ -128,6 +133,7 @@ const Counter: React.FC = () => {
   };
 
   const isSidePanel = mode === 'sidepanel';
+  const isNewTabMode = mode === 'newtab';
 
   return (
     <div className={`w-full h-full bg-gradient-to-br from-blue-50 to-indigo-100 ${isSidePanel ? '' : 'p-2'}`}>
@@ -144,18 +150,22 @@ const Counter: React.FC = () => {
 
         {/* Content */}
         <div className={`flex-1 p-4 space-y-4 overflow-y-auto ${isSidePanel ? 'min-h-0' : ''}`}>
-          <div className="bg-gray-50 rounded-lg p-3">
-            <h2 className="text-sm font-semibold text-gray-600 mb-2 flex items-center">
-              <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-              Current Tab
-            </h2>
-            <p className="text-xs text-gray-800 font-medium truncate mb-1">
-              {tabInfo.title || 'Loading...'}
-            </p>
-            <p className="text-xs text-gray-500 truncate">
-              {tabInfo.url || 'Loading...'}
-            </p>
-          </div>
+          {
+            !isNewTabMode && (
+              <div className="bg-gray-50 rounded-lg p-3">
+                <h2 className="text-sm font-semibold text-gray-600 mb-2 flex items-center">
+                  <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                  Current Tab
+                </h2>
+                <p className="text-xs text-gray-800 font-medium truncate mb-1">
+                  {tabInfo.title || 'Loading...'}
+                </p>
+                <p className="text-xs text-gray-500 truncate">
+                  {tabInfo.url || 'Loading...'}
+                </p>
+              </div>
+            )
+          }
 
           <div className="bg-white border border-gray-200 rounded-lg p-4">
             <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
@@ -183,56 +193,60 @@ const Counter: React.FC = () => {
 
           {/* Additional sections - show more in side panel mode */}
           <div className="space-y-3">
-            <div className="bg-white border border-gray-200 rounded-lg p-3">
-              <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                <span className="text-sm mr-2">⚡</span>
-                Quick Actions
-              </h4>
-              <div className="space-y-2">
-                <button 
-                  onClick={handleHighlightText}
-                  className={`w-full text-left px-3 py-2 text-sm rounded-md transition-colors ${
-                    isHighlighting 
-                      ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' 
-                      : 'text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  {isHighlighting ? '🟡 Remove Highlights' : '✨ Highlight Text'}
-                </button>
-                <button 
-                  onClick={handleExtractLinks}
-                  className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
-                >
-                  🔗 Extract Links
-                  {extractedLinks.length > 0 && (
-                    <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                      {extractedLinks.length}
-                    </span>
-                  )}
-                </button>
-                {isSidePanel && (
-                  <>
+            {
+              !isNewTabMode && (
+                <div className="bg-white border border-gray-200 rounded-lg p-3">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                    <span className="text-sm mr-2">⚡</span>
+                    Quick Actions
+                  </h4>
+                  <div className="space-y-2">
                     <button 
-                      onClick={handleSavePage}
+                      onClick={handleHighlightText}
+                      className={`w-full text-left px-3 py-2 text-sm rounded-md transition-colors ${
+                        isHighlighting 
+                          ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' 
+                          : 'text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      {isHighlighting ? '🟡 Remove Highlights' : '✨ Highlight Text'}
+                    </button>
+                    <button 
+                      onClick={handleExtractLinks}
                       className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
                     >
-                      💾 Save Page
-                      {savedPages.length > 0 && (
-                        <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
-                          {savedPages.length}
+                      🔗 Extract Links
+                      {extractedLinks.length > 0 && (
+                        <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                          {extractedLinks.length}
                         </span>
                       )}
                     </button>
-                    <button 
-                      onClick={handleExportData}
-                      className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
-                    >
-                      📤 Export Data
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
+                    {isSidePanel && (
+                      <>
+                        <button 
+                          onClick={handleSavePage}
+                          className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
+                        >
+                          💾 Save Page
+                          {savedPages.length > 0 && (
+                            <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                              {savedPages.length}
+                            </span>
+                          )}
+                        </button>
+                        <button 
+                          onClick={handleExportData}
+                          className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
+                        >
+                          📤 Export Data
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )
+            }
 
             <div className="bg-white border border-gray-200 rounded-lg p-3">
               <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center">
