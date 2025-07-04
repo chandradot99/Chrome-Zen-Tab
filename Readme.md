@@ -36,11 +36,11 @@ chrome-extension-react-scaffold/
 │   ├── manifest.popup.json      # Popup mode manifest
 │   └── manifest.sidepanel.json  # Side panel mode manifest
 ├── src/
-│   ├── popup/
+│   ├── app/
 │   │   ├── index.tsx            # React entry point
-│   │   ├── Popup.tsx            # Main popup component (dynamic)
-│   │   ├── popup.popup.html     # Popup mode HTML
-│   │   ├── popup.sidepanel.html # Side panel mode HTML
+│   │   ├── Counter.tsx            # Main Counter component (dynamic)
+│   │   ├── app.popup.html     # Popup mode HTML
+│   │   ├── app.sidepanel.html # Side panel mode HTML
 │   │   └── styles.css           # Tailwind CSS
 │   ├── background/
 │   │   ├── background.popup.ts    # Popup mode background script
