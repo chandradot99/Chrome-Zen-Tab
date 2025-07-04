@@ -1,20 +1,16 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
-const Webpack = require("webpack");
 
 module.exports = (env, argv) => {
-  // Determine mode: popup (default) or sidepanel
-  const mode = env.MODE || "popup";
   const isProduction = argv.mode === "production";
 
-  console.log(`Building for mode: ${mode}`);
   console.log(`Environment: ${isProduction ? "production" : "development"}`);
 
   return {
     entry: {
       index: "./src/app/index.tsx",
-      background: `./src/background/background.${mode}.ts`,
+      background: `./src/background/background.ts`,
       content: "./src/content/content.ts",
     },
     output: {
@@ -45,14 +41,14 @@ module.exports = (env, argv) => {
     },
     plugins: [
       new HtmlWebpackPlugin({
-        template: `./src/app/app.${mode}.html`,
+        template: `./src/app/index.html`,
         filename: "index.html",
         chunks: ["index"],
       }),
       new CopyWebpackPlugin({
         patterns: [
           {
-            from: `./configs/manifest.${mode}.json`,
+            from: `./configs/manifest.json`,
             to: "manifest.json",
           },
           {
@@ -66,9 +62,6 @@ module.exports = (env, argv) => {
             noErrorOnMissing: true,
           },
         ],
-      }),
-      new Webpack.DefinePlugin({
-        "process.env.EXTENSION_MODE": JSON.stringify(mode),
       }),
     ],
     devtool: isProduction ? false : "cheap-module-source-map",
