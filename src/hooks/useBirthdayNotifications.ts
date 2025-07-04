@@ -158,7 +158,7 @@ export const useBirthdayNotifications = (birthdays: Birthday[]) => {
 
     chrome.notifications.create(notificationId, {
       type: "basic",
-      iconUrl: "icons/icon-128.png",
+      iconUrl: "icons/icon128.png",
       title: trigger.title,
       message: trigger.getMessage(birthday.name, birthday.days),
       buttons:
@@ -180,7 +180,7 @@ export const useBirthdayNotifications = (birthdays: Birthday[]) => {
       try {
         const notification = new Notification(trigger.title, {
           body: trigger.getMessage(birthday.name, birthday.days),
-          icon: "/icons/icon-128.png",
+          icon: "/icons/icon128.png",
           tag: notificationId,
           requireInteraction: trigger.days === 0,
         });
