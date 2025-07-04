@@ -20,7 +20,7 @@ export const DEFAULT_BACKGROUNDS = [
   {
     name: "Desert",
     image:
-      "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?ixlib=rb-4.0.3&auto=format&fit=crop&w=2340&q=80",
+      "https://images.unsplash.com/photo-1641885282024-40d86bdbabda?ixlib=rb-4.0.3&auto=format&fit=crop&w=2340&q=80",
     overlay: "bg-black/35",
   },
   {
