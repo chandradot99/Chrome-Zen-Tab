@@ -90,10 +90,7 @@ const Home: React.FC = () => {
 
           {/* Center Column - Daily Notes (50%) */}
           <div className="col-span-6">
-            <DailyNotes 
-              notes={notes}
-              onNotesChange={handleNotesChange}
-            />
+            <DailyNotes />
           </div>
 
           {/* Right Column - Quick Links & Controls (25%) */}
