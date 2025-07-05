@@ -156,7 +156,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({ tasks, onTasksChange }) => {
         {tasks.length === 0 ? (
           /* Empty State */
           <div className="flex-1 flex flex-col items-center justify-center text-center">
-            <CheckSquare size={48} className="text-white/30 mx-auto mb-4" />
+            <CheckSquare size={36} className="text-white/30 mx-auto mb-4" />
             <div className="text-white/60 text-lg mb-2 drop-shadow-lg [text-shadow:_0_2px_8px_rgb(0_0_0_/_40%)]">
               No tasks yet
             </div>

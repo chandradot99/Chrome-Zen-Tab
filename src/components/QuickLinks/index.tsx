@@ -164,10 +164,10 @@ const QuickLinksManager: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
-          <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-xl flex items-center justify-center mr-3">
-            <LinkIcon size={20} className="text-white" />
+          <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-xl flex items-center justify-center mr-3">
+            <LinkIcon size={16} className="text-white" />
           </div>
-          <h2 className="text-lg font-semibold text-white drop-shadow-lg [text-shadow:_0_2px_8px_rgb(0_0_0_/_40%)]">
+          <h2 className="text-md font-semibold text-white drop-shadow-lg [text-shadow:_0_2px_8px_rgb(0_0_0_/_40%)]">
             Quick Links
           </h2>
         </div>

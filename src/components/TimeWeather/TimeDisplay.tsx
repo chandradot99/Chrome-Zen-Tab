@@ -132,7 +132,7 @@ const TimeDisplay: React.FC<TimeDisplayProps> = ({ onTimezoneUpdate }) => {
   };
 
   const addTimezone = (timezone: string, label: string) => {
-    if (timezones.length >= 4) return; // Max 4 additional timezones
+    if (timezones.length >= 5) return; // Max 5 additional timezones
     
     const newTimezone: Timezone = {
       id: Date.now().toString(),
@@ -249,7 +249,7 @@ const TimeDisplay: React.FC<TimeDisplayProps> = ({ onTimezoneUpdate }) => {
           {timezones.length > 0 && (
             <div className="mb-4">
               <div className="text-white/70 text-xs font-medium mb-2 drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
-                Active Timezones ({timezones.length}/4)
+                Active Timezones ({timezones.length}/5)
               </div>
               <div className="space-y-2 max-h-32 overflow-y-auto">
                 {timezones.map((tz) => (
@@ -311,7 +311,7 @@ const TimeDisplay: React.FC<TimeDisplayProps> = ({ onTimezoneUpdate }) => {
             <div className="text-white/40 text-xs drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
               {timezones.length === 0 
                 ? 'Add timezones to show them above this section'
-                : `${5 - timezones.length} more timezone${4 - timezones.length === 1 ? '' : 's'} can be added`
+                : `${5 - timezones.length} more timezone${5 - timezones.length === 1 ? '' : 's'} can be added`
               }
             </div>
           </div>
