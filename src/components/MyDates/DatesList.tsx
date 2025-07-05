@@ -102,13 +102,13 @@ const DatesList: React.FC<DatesListProps> = ({ dates, onDelete }) => {
           <div className="flex items-center justify-between">
             <div className="flex items-center flex-1 min-w-0">
               <div className="flex items-center mr-3 flex-shrink-0">
-                <span className="text-lg">{getTypeEmoji(date.type)}</span>
+                <span className="text-md">{getTypeEmoji(date.type)}</span>
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-white font-medium drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)] truncate">
                   {date.name}
                 </div>
-                <div className="text-white/60 text-sm drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)] truncate">
+                <div className="text-white/60 text-xs drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)] truncate">
                   {formatDisplayDate(date.date)}
                   {showTypeLabel && (
                     <>
@@ -120,7 +120,7 @@ const DatesList: React.FC<DatesListProps> = ({ dates, onDelete }) => {
               </div>
             </div>
             <div className="text-right flex-shrink-0 ml-3">
-              <div className={`font-semibold text-sm drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)] ${
+              <div className={`font-semibold text-xs drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)] ${
                 date.days === 0 
                   ? 'text-yellow-400' 
                   : date.days <= 7 

@@ -50,7 +50,7 @@ const TimezoneClocks: React.FC<{ timezones: Timezone[] }> = ({ timezones }) => {
       
       return {
         dayName: weekday,
-        dayDate: `${day} ${month}`
+        dayDate: `${month} ${day}`
       };
     } catch (error) {
       return { dayName: '', dayDate: '' };
@@ -168,9 +168,9 @@ const TimezoneClocks: React.FC<{ timezones: Timezone[] }> = ({ timezones }) => {
               </div>
 
               {/* Date */}
-              <div className="flex flex-col items-center">
+              <div className="flex gap-1 justify-center">
                 <div className="text-xs text-white/60 font-medium">
-                  {dayName}
+                  {dayName}, 
                 </div>
                 <div className={`text-xs font-medium ${
                   differentDay 
