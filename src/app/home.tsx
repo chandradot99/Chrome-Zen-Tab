@@ -5,11 +5,11 @@ import {
   DEFAULT_BACKGROUNDS, 
   STORAGE_KEYS 
 } from './../utils/constants';
-import TimeWeather from '../components/TimeWeather';
-import TabbedTasksNotes from '../components/DailyNotes';
 import BackgroundSelector from '../components/BGSelector';
-import QuickLinksManager from '../components/QuickLinks';
-import ImportantDatesManager from '../components/Birthdays';
+import TaskNotes from '../components/TaskNotes';
+import MyDates from '../components/MyDates';
+import TimeWeather from '../components/TimeWeather';
+import QuickLinks from '../components/QuickLinks';
 
 const Home: React.FC = () => {
   const currentTime = useTime();
@@ -25,11 +25,6 @@ const Home: React.FC = () => {
 
   const handleToggleAutoChange = () => {
     setAutoChangeEnabled(!autoChangeEnabled);
-  };
-
-  const handleSearch = (query: string) => {
-    const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
-    window.open(searchUrl, '_blank');
   };
 
   return (
@@ -59,17 +54,17 @@ const Home: React.FC = () => {
           
           {/* Left Column - Birthdays (25%) */}
           <div className="col-span-3">
-            <ImportantDatesManager />
+            <MyDates />
           </div>
 
           {/* Center Column - Daily Notes (50%) */}
           <div className="col-span-6">
-            <TabbedTasksNotes />
+            <TaskNotes />
           </div>
 
           {/* Right Column - Quick Links & Controls (25%) */}
           <div className="col-span-3 space-y-6">
-            <QuickLinksManager />
+            <QuickLinks />
 
             <BackgroundSelector 
               backgrounds={backgrounds}
