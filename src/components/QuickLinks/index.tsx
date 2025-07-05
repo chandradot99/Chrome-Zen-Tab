@@ -72,10 +72,12 @@ const QuickLinksManager: React.FC = () => {
 
   const setDefaultLinks = () => {
     const defaultLinks: QuickLink[] = [
-      { id: '1', name: 'Gmail', iconName: 'Mail', url: 'https://gmail.com', color: 'from-red-500 to-red-600' },
-      { id: '2', name: 'Calendar', iconName: 'Calendar', url: 'https://calendar.google.com', color: 'from-blue-500 to-blue-600' },
-      { id: '3', name: 'GitHub', iconName: 'Github', url: 'https://github.com', color: 'from-gray-800 to-black' },
-      { id: '4', name: 'YouTube', iconName: 'Youtube', url: 'https://youtube.com', color: 'from-red-600 to-red-700' },
+      { id: '1', name: 'Google Search', iconName: 'Search', url: 'https://google.com', color: 'from-blue-500 to-purple-500' },
+      { id: '2', name: 'ChatGPT', iconName: 'MessageSquare', url: 'https://chat.openai.com', color: 'from-green-500 to-teal-500' },
+      { id: '3', name: 'Gmail', iconName: 'Mail', url: 'https://gmail.com', color: 'from-red-500 to-red-600' },
+      { id: '4', name: 'Calendar', iconName: 'Calendar', url: 'https://calendar.google.com', color: 'from-blue-500 to-blue-600' },
+      { id: '5', name: 'GitHub', iconName: 'Github', url: 'https://github.com', color: 'from-gray-800 to-black' },
+      { id: '6', name: 'YouTube', iconName: 'Youtube', url: 'https://youtube.com', color: 'from-red-600 to-red-700' },
     ];
     setQuickLinks(defaultLinks);
     saveQuickLinks(defaultLinks);

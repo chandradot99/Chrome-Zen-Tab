@@ -1,135 +1,83 @@
 import React, { useState, useEffect } from 'react';
-import { useStorage } from '../hooks/useStorage';
-import { STORAGE_KEYS } from '../utils/constants';
-import { RotateCcw } from 'lucide-react';
-
-interface BackgroundData {
-  url: string;
-  timestamp: number;
-  date: string;
-  category: string;
-}
+import { RotateCcw, ExternalLink } from 'lucide-react';
 
 interface BackgroundManagerProps {
   children: React.ReactNode;
 }
 
 const BackgroundManager: React.FC<BackgroundManagerProps> = ({ children }) => {
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  
-  // Storage for cached background
-  const [cachedBackground, setCachedBackground] = useStorage<BackgroundData | null>(
-    STORAGE_KEYS.CACHED_BACKGROUND, 
-    null
-  );
-
   const [currentBackground, setCurrentBackground] = useState<string>('');
-
-  // Zen-focused categories perfect for productivity backgrounds
-  const zenCategories = [
-    'nature',      // Natural landscapes
-    'landscape',   // Beautiful vistas
-    'mountains',   // Inspiring peaks
-    'ocean',       // Calming waters
-    'sky',         // Open skies
-    'forest',      // Peaceful woods
-    'sunset',      // Warm, peaceful moments
-    'clouds',      // Soft, dreamy skies
-  ];
+  const [currentSeed, setCurrentSeed] = useState<string>('');
 
   // Fallback gradient background
   const fallbackBackground = 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)';
 
-  // Get today's date string for comparison
-  const getTodayString = () => {
-    return new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+  // Generate a random seed
+  const generateRandomSeed = () => {
+    const timestamp = Date.now().toString(36);
+    const random = Math.random().toString(36).substring(2, 15);
+    return `zentab-${timestamp}-${random}`;
   };
 
-  // Generate a consistent seed based on date for same image per day
-  const getDailySeed = () => {
-    const today = getTodayString();
-    const seed = today.split('-').join(''); // Remove dashes: 20241225
-    return seed;
-  };
-
-  // Get a random zen category
-  const getRandomZenCategory = () => {
-    return zenCategories[Math.floor(Math.random() * zenCategories.length)];
-  };
-
-  // Get Lorem Picsum image URL with daily seed and zen category
-  const getDailyBackgroundUrl = (isRefresh = false) => {
-    const category = getRandomZenCategory();
+  // Load a random background
+  const loadRandomBackground = () => {
+    const seed = generateRandomSeed();
+    const newUrl = `https://picsum.photos/seed/${seed}/1920/1080`;
     
-    if (isRefresh) {
-      // For manual refresh, use timestamp to ensure new image
-      const timestamp = Date.now();
-      return `https://picsum.photos/seed/${category}-${timestamp}/1920/1080?blur=1`;
-    } else {
-      // For daily auto-change, use date to ensure same image per day
-      const seed = getDailySeed();
-      return `https://picsum.photos/seed/${category}-${seed}/1920/1080?blur=1`;
-    }
-  };
-
-  // Check if we need a new background
-  const shouldFetchNewBackground = () => {
-    if (!cachedBackground) return true;
+    console.log('Loading background with seed:', seed);
     
-    const today = getTodayString();
-    return cachedBackground.date !== today;
-  };
-
-  // Load background image silently in the background
-  const loadBackground = async (isRefresh = false) => {
-    try {
-      // Start with cached background if available and not refreshing
-      if (!isRefresh && cachedBackground && !shouldFetchNewBackground()) {
-        setCurrentBackground(cachedBackground.url);
-      }
-
-      // If we need a new background or refreshing, load it silently
-      if (shouldFetchNewBackground() || isRefresh) {
-        const newUrl = getDailyBackgroundUrl(isRefresh);
-        const category = getRandomZenCategory();
-        
-        // Pre-load the image silently
-        const img = new Image();
-        img.onload = () => {
-          const newBackground: BackgroundData = {
-            url: newUrl,
-            timestamp: Date.now(),
-            date: getTodayString(),
-            category: category
-          };
-          
-          setCachedBackground(newBackground);
-          setCurrentBackground(newUrl);
-          setIsRefreshing(false);
-        };
-        img.onerror = () => {
-          // Silently fail - keep using fallback or cached background
-          console.warn('Failed to load new background image');
-          setIsRefreshing(false);
-        };
-        img.src = newUrl;
-      }
-    } catch (error) {
-      console.error('Error loading background:', error);
-      setIsRefreshing(false);
-    }
-  };
-
-  // Handle manual refresh
-  const handleRefreshBackground = () => {
-    setIsRefreshing(true);
-    loadBackground(true);
+    // Pre-load the image silently
+    const img = new Image();
+    img.onload = () => {
+      setCurrentBackground(newUrl);
+      setCurrentSeed(seed);
+    };
+    img.onerror = () => {
+      console.warn('Failed to load background image');
+    };
+    img.src = newUrl;
   };
 
   // Initial load
   useEffect(() => {
-    loadBackground();
+    loadRandomBackground();
   }, []);
+
+  // Listen for refresh events from BackgroundInfoCard
+  useEffect(() => {
+    const handleBackgroundRefresh = () => {
+      loadRandomBackground();
+    };
+
+    window.addEventListener('backgroundRefresh', handleBackgroundRefresh);
+    
+    return () => {
+      window.removeEventListener('backgroundRefresh', handleBackgroundRefresh);
+    };
+  }, []);
+
+  // Author Attribution Component
+  const AuthorAttribution = () => {
+    return (
+      <div className="fixed bottom-4 right-4 z-30">
+        <div className="backdrop-blur-sm bg-black/50 border border-white/10 rounded-lg px-3 py-2 shadow-lg">
+          <div className="flex items-center space-x-2 text-white/70 text-xs">
+            <span>📸</span>
+            <span>Photo by</span>
+            <a 
+              href="https://picsum.photos"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white/90 hover:text-white transition-colors underline decoration-white/30 hover:decoration-white/60"
+            >
+              Lorem Picsum
+            </a>
+            <ExternalLink size={10} className="text-white/50" />
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -148,7 +96,7 @@ const BackgroundManager: React.FC<BackgroundManagerProps> = ({ children }) => {
       )}
       
       {/* Overlay for better text readability */}
-      <div className="fixed inset-0 bg-black/40 transition-all duration-1000"></div>
+      <div className="fixed inset-0 bg-black/60 transition-all duration-1000"></div>
 
       {/* Floating Orbs Background Effects */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
@@ -161,6 +109,9 @@ const BackgroundManager: React.FC<BackgroundManagerProps> = ({ children }) => {
       <div className="relative z-10">
         {children}
       </div>
+
+      {/* Author Attribution */}
+      <AuthorAttribution />
     </div>
   );
 };
@@ -168,59 +119,20 @@ const BackgroundManager: React.FC<BackgroundManagerProps> = ({ children }) => {
 // Export the BackgroundInfoCard as a separate component for use in layouts
 export const BackgroundInfoCard: React.FC = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
-  
-  // Storage for cached background
-  const [cachedBackground, setCachedBackground] = useStorage<BackgroundData | null>(
-    STORAGE_KEYS.CACHED_BACKGROUND, 
-    null
-  );
-
-  // Zen categories
-  const zenCategories = [
-    'nature', 'landscape', 'mountains', 'ocean', 'sky', 
-    'forest', 'minimal', 'sunset', 'clouds', 'water'
-  ];
-
-  // Get a random zen category
-  const getRandomZenCategory = () => {
-    return zenCategories[Math.floor(Math.random() * zenCategories.length)];
-  };
-
-  // Get today's date string
-  const getTodayString = () => {
-    return new Date().toISOString().split('T')[0];
-  };
+  const [refreshCount, setRefreshCount] = useState(0);
 
   // Handle manual refresh
   const handleRefreshBackground = () => {
     setIsRefreshing(true);
+    setRefreshCount(prev => prev + 1);
     
-    // Generate new background URL with timestamp for variety
-    const category = getRandomZenCategory();
-    const timestamp = Date.now();
-    const newUrl = `https://picsum.photos/seed/${category}-${timestamp}/1920/1080?blur=1`;
+    // Trigger refresh event
+    window.dispatchEvent(new CustomEvent('backgroundRefresh'));
     
-    // Pre-load the image
-    const img = new Image();
-    img.onload = () => {
-      const newBackground: BackgroundData = {
-        url: newUrl,
-        timestamp: Date.now(),
-        date: getTodayString(),
-        category: category
-      };
-      
-      setCachedBackground(newBackground);
+    // Reset loading state after a short delay
+    setTimeout(() => {
       setIsRefreshing(false);
-      
-      // Force a page reload to apply the new background
-      window.location.reload();
-    };
-    img.onerror = () => {
-      console.warn('Failed to load new background image');
-      setIsRefreshing(false);
-    };
-    img.src = newUrl;
+    }, 1500);
   };
 
   return (
@@ -246,11 +158,24 @@ export const BackgroundInfoCard: React.FC = () => {
         </div>
         
         <h3 className="text-white font-medium text-sm mb-2 drop-shadow-lg [text-shadow:_0_2px_8px_rgb(0_0_0_/_40%)]">
-          Daily Background
+          Random Background
         </h3>
         <p className="text-white/60 text-xs drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)] mb-2">
-          Beautiful nature scenes for focus
+          Beautiful random images for inspiration
         </p>
+        
+        {/* Refresh Count */}
+        {refreshCount > 0 && (
+          <div className="inline-flex items-center px-2 py-1 bg-white/10 rounded-full mb-2">
+            <span className="text-white/50 text-xs">
+              Refreshed {refreshCount} times
+            </span>
+          </div>
+        )}
+        
+        <div className="text-white/40 text-xs">
+          {isRefreshing ? 'Loading new image...' : 'Click refresh for new image'}
+        </div>
       </div>
     </div>
   );
