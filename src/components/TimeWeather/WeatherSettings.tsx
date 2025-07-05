@@ -109,7 +109,7 @@ const WeatherSettings: React.FC<WeatherSettingsProps> = ({
   if (!isVisible) return null;
 
   return (
-    <div className="absolute top-full right-0 mt-2 w-72 backdrop-blur-xl bg-black/90 border border-white/30 rounded-xl p-3 shadow-2xl z-[100]">
+    <div className="absolute top-full right-0 mt-2 w-72 backdrop-blur-xl bg-black border border-white/30 rounded-xl p-3 shadow-2xl z-[100]">
       <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-xl"></div>
       
       <div className="relative">
