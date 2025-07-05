@@ -48,4 +48,5 @@ export const STORAGE_KEYS = {
   WEATHER_DATA: "zenTab_weather_data",
   LOCATION: "zenTab_location",
   TIMEZONES: "zenTab_timezones",
+  CACHED_BACKGROUND: "zenTab_cached_background",
 } as const;

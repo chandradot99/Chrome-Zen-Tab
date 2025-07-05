@@ -7,7 +7,10 @@
     "newtab": "index.html"
   },
   "permissions": ["storage"],
-  "host_permissions": ["https://www.weatherapi.com/*"],
+  "host_permissions": [
+    "https://www.weatherapi.com/*",
+    "https://picsum.photos/*"
+  ],
   "action": {
     "default_title": "Open ZenTab New Tab"
   },
