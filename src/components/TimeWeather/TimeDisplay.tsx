@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Plus, X, Globe } from 'lucide-react';
+import { Settings } from 'lucide-react';
 import { STORAGE_KEYS } from '../../utils/constants';
+import TimezoneSettings from './TimezoneSettings';
 
 interface Timezone {
   id: string;
@@ -23,24 +24,6 @@ const TimeDisplay: React.FC<TimeDisplayProps> = ({ onTimezoneUpdate }) => {
   const [localCity, setLocalCity] = useState<string>('');
   const [timezones, setTimezones] = useState<Timezone[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Popular timezone options
-  const popularTimezones = [
-    { label: 'New York', timezone: 'America/New_York' },
-    { label: 'Los Angeles', timezone: 'America/Los_Angeles' },
-    { label: 'London', timezone: 'Europe/London' },
-    { label: 'Paris', timezone: 'Europe/Paris' },
-    { label: 'Tokyo', timezone: 'Asia/Tokyo' },
-    { label: 'Sydney', timezone: 'Australia/Sydney' },
-    { label: 'Dubai', timezone: 'Asia/Dubai' },
-    { label: 'Singapore', timezone: 'Asia/Singapore' },
-    { label: 'Mumbai', timezone: 'Asia/Kolkata' },
-    { label: 'Hong Kong', timezone: 'Asia/Hong_Kong' },
-    { label: 'Berlin', timezone: 'Europe/Berlin' },
-    { label: 'Toronto', timezone: 'America/Toronto' },
-    { label: 'São Paulo', timezone: 'America/Sao_Paulo' },
-    { label: 'Mexico City', timezone: 'America/Mexico_City' },
-  ];
 
   // Load timezones on mount
   useEffect(() => {
@@ -131,7 +114,7 @@ const TimeDisplay: React.FC<TimeDisplayProps> = ({ onTimezoneUpdate }) => {
     });
   };
 
-  const addTimezone = (timezone: string, label: string) => {
+  const handleAddTimezone = (timezone: string, label: string) => {
     if (timezones.length >= 5) return; // Max 5 additional timezones
     
     const newTimezone: Timezone = {
@@ -146,41 +129,14 @@ const TimeDisplay: React.FC<TimeDisplayProps> = ({ onTimezoneUpdate }) => {
     setShowSettings(false);
   };
 
-  const removeTimezone = (id: string) => {
+  const handleRemoveTimezone = (id: string) => {
     const updatedTimezones = timezones.filter(tz => tz.id !== id);
     setTimezones(updatedTimezones);
     saveTimezones(updatedTimezones);
   };
 
-  const formatTimeForTimezone = (date: Date, timezone: string): string => {
-    try {
-      return date.toLocaleTimeString([], { 
-        hour: '2-digit', 
-        minute: '2-digit',
-        timeZone: timezone
-      });
-    } catch (error) {
-      console.error('Error formatting time for timezone:', timezone, error);
-      return '--:--';
-    }
-  };
-
-  const getTimeIcon = (date: Date, timezone: string) => {
-    try {
-      const hour = parseInt(date.toLocaleTimeString([], { 
-        hour: '2-digit', 
-        hour12: false,
-        timeZone: timezone 
-      }));
-      
-      if (hour >= 6 && hour < 12) return '🌅';
-      if (hour >= 12 && hour < 18) return '☀️';
-      if (hour >= 18 && hour < 22) return '🌆';
-      return '🌙';
-    } catch (error) {
-      console.error('Error getting time icon for timezone:', timezone, error);
-      return '🕐';
-    }
+  const handleCloseSettings = () => {
+    setShowSettings(false);
   };
 
   if (isLoading) {
@@ -230,93 +186,17 @@ const TimeDisplay: React.FC<TimeDisplayProps> = ({ onTimezoneUpdate }) => {
         </div>
       </div>
 
-      {/* Settings Panel */}
-      {showSettings && (
-        <div className="absolute top-full left-0 mt-2 w-72 backdrop-blur-xl bg-black border border-white/30 rounded-xl p-4 shadow-2xl z-50">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-white font-medium text-sm drop-shadow-lg [text-shadow:_0_2px_8px_rgb(0_0_0_/_40%)]">
-              Additional Timezones
-            </h3>
-            <button
-              onClick={() => setShowSettings(false)}
-              className="text-white/60 hover:text-white transition-colors"
-            >
-              <X size={16} />
-            </button>
-          </div>
-
-          {/* Current Additional Timezones */}
-          {timezones.length > 0 && (
-            <div className="mb-4">
-              <div className="text-white/70 text-xs font-medium mb-2 drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
-                Active Timezones ({timezones.length}/5)
-              </div>
-              <div className="space-y-2 max-h-32 overflow-y-auto">
-                {timezones.map((tz) => (
-                  <div
-                    key={tz.id}
-                    className="flex items-center justify-between p-2 bg-white/5 rounded-lg"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <span className="text-sm">
-                        {getTimeIcon(currentTime, tz.timezone)}
-                      </span>
-                      <span className="text-white text-sm font-medium">
-                        {tz.label}
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-white/70 text-sm">
-                        {formatTimeForTimezone(currentTime, tz.timezone)}
-                      </span>
-                      <button
-                        onClick={() => removeTimezone(tz.id)}
-                        className="text-white/50 hover:text-red-400 transition-colors"
-                      >
-                        <X size={14} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Add New Timezone */}
-          {timezones.length < 5 && (
-            <div>
-              <div className="text-white/70 text-xs font-medium mb-2 drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
-                {timezones.length === 0 ? 'Add Timezones' : 'Add More'}
-              </div>
-              <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto">
-                {popularTimezones
-                  .filter(ptz => ptz.timezone !== localTimezone && !timezones.some(tz => tz.timezone === ptz.timezone))
-                  .map((ptz, index) => (
-                    <button
-                      key={index}
-                      onClick={() => addTimezone(ptz.timezone, ptz.label)}
-                      className="p-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg text-white text-xs transition-all duration-200 flex items-center space-x-2"
-                    >
-                      <Globe size={10} />
-                      <span className="truncate">{ptz.label}</span>
-                    </button>
-                  ))
-                }
-              </div>
-            </div>
-          )}
-
-          {/* Helper Text */}
-          <div className="mt-3 text-center">
-            <div className="text-white/40 text-xs drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
-              {timezones.length === 0 
-                ? 'Add timezones to show them above this section'
-                : `${5 - timezones.length} more timezone${5 - timezones.length === 1 ? '' : 's'} can be added`
-              }
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Timezone Settings Component */}
+      <TimezoneSettings
+        isVisible={showSettings}
+        onClose={handleCloseSettings}
+        timezones={timezones}
+        localTimezone={localTimezone}
+        currentTime={currentTime}
+        onAddTimezone={handleAddTimezone}
+        onRemoveTimezone={handleRemoveTimezone}
+        maxTimezones={5}
+      />
     </div>
   );
 };
