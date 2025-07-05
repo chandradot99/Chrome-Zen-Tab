@@ -1,5 +1,4 @@
 import React from 'react';
-import { Palette } from 'lucide-react';
 
 interface Background {
   name: string;
@@ -27,10 +26,7 @@ const BackgroundSelector: React.FC<BackgroundSelectorProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
-          <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-pink-500 rounded-xl flex items-center justify-center mr-3">
-            <Palette size={20} className="text-white" />
-          </div>
-          <h2 className="text-lg font-semibold text-white drop-shadow-lg [text-shadow:_0_2px_8px_rgb(0_0_0_/_40%)]">
+          <h2 className="text-md font-semibold text-white drop-shadow-lg [text-shadow:_0_2px_8px_rgb(0_0_0_/_40%)]">
             Backgrounds
           </h2>
         </div>

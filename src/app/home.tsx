@@ -36,7 +36,7 @@ const Home: React.FC = () => {
       ></div>
       
       {/* Overlay with 90% opacity */}
-      <div className="fixed inset-0 bg-black/40 transition-all duration-1000"></div>
+      <div className="fixed inset-0 bg-black/50 transition-all duration-1000"></div>
 
       {/* Floating Orbs Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">

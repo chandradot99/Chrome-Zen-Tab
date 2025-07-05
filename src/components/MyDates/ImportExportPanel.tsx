@@ -20,6 +20,86 @@ const ImportExportPanel: React.FC<{ dates: ImportantDate[], onImport: (dates: Im
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
 
+  // Enhanced CSV parsing function
+  const parseCSVLine = (line: string): string[] => {
+    const result: string[] = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      
+      if (char === '"' && (i === 0 || line[i - 1] === ',')) {
+        inQuotes = true;
+      } else if (char === '"' && inQuotes && (i === line.length - 1 || line[i + 1] === ',')) {
+        inQuotes = false;
+      } else if (char === ',' && !inQuotes) {
+        result.push(current.trim());
+        current = '';
+      } else if (char !== '"' || inQuotes) {
+        current += char;
+      }
+    }
+    
+    result.push(current.trim());
+    return result;
+  };
+
+  // Parse date from various formats
+  const parseDate = (dateStr: string): string | null => {
+    if (!dateStr) return null;
+    
+    // Remove quotes and trim
+    dateStr = dateStr.replace(/"/g, '').trim();
+    
+    // If already in YYYY-MM-DD format
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+      return dateStr;
+    }
+    
+    // Try to parse MM/DD/YYYY or DD/MM/YYYY or other common formats
+    const dateFormats = [
+      /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/, // MM/DD/YYYY or DD/MM/YYYY
+      /^(\d{1,2})-(\d{1,2})-(\d{4})$/, // MM-DD-YYYY or DD-MM-YYYY
+      /^(\d{4})\/(\d{1,2})\/(\d{1,2})$/, // YYYY/MM/DD
+      /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/, // MM.DD.YYYY or DD.MM.YYYY
+    ];
+    
+    for (const format of dateFormats) {
+      const match = dateStr.match(format);
+      if (match) {
+        let year, month, day;
+        
+        if (format === dateFormats[2]) { // YYYY/MM/DD
+          [, year, month, day] = match;
+        } else {
+          [, month, day, year] = match;
+          // Swap if day > 12 (assume DD/MM format)
+          if (parseInt(month) > 12) {
+            [month, day] = [day, month];
+          }
+        }
+        
+        const parsedMonth = String(month).padStart(2, '0');
+        const parsedDay = String(day).padStart(2, '0');
+        
+        return `${year}-${parsedMonth}-${parsedDay}`;
+      }
+    }
+    
+    return null;
+  };
+
+  // Detect type from string
+  const detectType = (typeStr: string): 'birthday' | 'anniversary' | 'other' => {
+    if (!typeStr) return 'other';
+    
+    const lower = typeStr.toLowerCase().trim();
+    if (lower.includes('birth') || lower.includes('bday')) return 'birthday';
+    if (lower.includes('anniversary') || lower.includes('anniv')) return 'anniversary';
+    return 'other';
+  };
+
   const exportToCSV = () => {
     if (dates.length === 0) {
       alert('No dates to export!');
@@ -62,29 +142,82 @@ const ImportExportPanel: React.FC<{ dates: ImportantDate[], onImport: (dates: Im
     }
 
     try {
-      const lines = importData.trim().split('\n');
-      const headers = lines[0].toLowerCase().split(',').map(h => h.trim().replace(/"/g, ''));
+      const lines = importData.trim().split('\n').filter(line => line.trim());
+      if (lines.length < 2) {
+        alert('CSV must contain at least a header row and one data row!');
+        return;
+      }
+
+      const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase().trim().replace(/"/g, ''));
       
+      // Find column indices
       const nameIndex = headers.findIndex(h => h.includes('name'));
+      const typeIndex = headers.findIndex(h => h.includes('type'));
+      const dateIndex = headers.findIndex(h => h.includes('date') && !h.includes('month') && !h.includes('day'));
+      const monthIndex = headers.findIndex(h => h.includes('month'));
+      const dayIndex = headers.findIndex(h => h.includes('day'));
+      
       if (nameIndex === -1) {
         alert('CSV must contain a "Name" column!');
         return;
       }
 
       const newDates: ImportantDate[] = [];
+      const errors: string[] = [];
       
       for (let i = 1; i < lines.length; i++) {
-        const row = lines[i].split(',').map(cell => cell.trim().replace(/^"(.*)"$/, '$1'));
+        const row = parseCSVLine(lines[i]);
         
-        const name = row[nameIndex]?.trim();
-        if (!name) continue;
+        const name = row[nameIndex]?.trim().replace(/"/g, '');
+        if (!name) {
+          errors.push(`Row ${i + 1}: Missing name`);
+          continue;
+        }
+
+        let dateStr = '';
+        
+        // Try to get date from date column first
+        if (dateIndex !== -1 && row[dateIndex]) {
+          dateStr = row[dateIndex];
+        }
+        // If no date column or empty, try to construct from month/day
+        else if (monthIndex !== -1 && dayIndex !== -1 && row[monthIndex] && row[dayIndex]) {
+          const monthStr = row[monthIndex].trim();
+          const dayStr = row[dayIndex].trim();
+          
+          // Convert month name to number if needed
+          let monthNum = parseInt(monthStr);
+          if (isNaN(monthNum)) {
+            monthNum = months.findIndex(m => m.toLowerCase().startsWith(monthStr.toLowerCase())) + 1;
+          }
+          
+          if (monthNum >= 1 && monthNum <= 12) {
+            const currentYear = new Date().getFullYear();
+            dateStr = `${currentYear}-${String(monthNum).padStart(2, '0')}-${String(dayStr).padStart(2, '0')}`;
+          }
+        }
+        
+        const parsedDate = parseDate(dateStr);
+        if (!parsedDate) {
+          errors.push(`Row ${i + 1}: Invalid or missing date format`);
+          continue;
+        }
+
+        // Validate date
+        const testDate = new Date(parsedDate);
+        if (isNaN(testDate.getTime())) {
+          errors.push(`Row ${i + 1}: Invalid date: ${dateStr}`);
+          continue;
+        }
+
+        const type = typeIndex !== -1 ? detectType(row[typeIndex]) : 'other';
 
         const newDate: ImportantDate = {
           id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
           name,
-          type: 'other',
-          date: '2024-01-01',
-          days: calculateDaysUntilDate('2024-01-01'),
+          type,
+          date: parsedDate,
+          days: calculateDaysUntilDate(parsedDate),
           color: colors[newDates.length % colors.length]
         };
         
@@ -92,7 +225,7 @@ const ImportExportPanel: React.FC<{ dates: ImportantDate[], onImport: (dates: Im
       }
 
       if (newDates.length === 0) {
-        alert('No valid dates found!');
+        alert('No valid dates found!\n\nErrors:\n' + errors.join('\n'));
         return;
       }
 
@@ -100,10 +233,26 @@ const ImportExportPanel: React.FC<{ dates: ImportantDate[], onImport: (dates: Im
       setImportData('');
       setShowImportPanel(false);
       
-      alert(`Successfully imported ${newDates.length} dates!`);
+      let message = `Successfully imported ${newDates.length} dates!`;
+      if (errors.length > 0) {
+        message += `\n\nWarnings:\n${errors.slice(0, 5).join('\n')}`;
+        if (errors.length > 5) {
+          message += `\n... and ${errors.length - 5} more warnings`;
+        }
+      }
+      alert(message);
     } catch (error) {
-      alert('Error importing CSV data. Please check the format and try again.');
+      console.error('Import error:', error);
+      alert('Error importing CSV data. Please check the format and try again.\n\nMake sure your CSV has proper headers and date formats.');
     }
+  };
+
+  const loadTemplate = () => {
+    const template = `Name,Type,Date
+"John Doe",birthday,1990-05-15
+"Jane Smith",anniversary,2020-06-20
+"Alex Johnson",other,1985-12-25`;
+    setImportData(template);
   };
 
   return (
@@ -124,11 +273,14 @@ const ImportExportPanel: React.FC<{ dates: ImportantDate[], onImport: (dates: Im
           </div>
 
           <div className="space-y-3">
+            <div className="text-white/70 text-xs mb-2">
+              Supported formats: Name (required), Type (optional), Date (YYYY-MM-DD, MM/DD/YYYY, etc.)
+            </div>
             <textarea
               value={importData}
               onChange={(e) => setImportData(e.target.value)}
               placeholder="Paste CSV data here..."
-              className="w-full h-28 bg-white/10 border border-white/20 rounded-lg p-3 text-white placeholder-white/40 text-sm outline-none focus:bg-white/15 focus:border-white/40 transition-all duration-300 resize-none"
+              className="w-full h-32 bg-white/10 border border-white/20 rounded-lg p-3 text-white placeholder-white/40 text-sm outline-none focus:bg-white/15 focus:border-white/40 transition-all duration-300 resize-none font-mono"
             />
             <div className="flex space-x-2">
               <button
@@ -139,7 +291,7 @@ const ImportExportPanel: React.FC<{ dates: ImportantDate[], onImport: (dates: Im
                 <span className="drop-shadow-sm [text-shadow:_0_1px_4px_rgb(0_0_0_/_30%)]">Import CSV</span>
               </button>
               <button
-                onClick={() => setImportData('Name,Type,Date\n"John Doe",birthday,2024-01-15')}
+                onClick={loadTemplate}
                 className="flex-1 py-3 px-4 bg-gradient-to-r from-white/10 to-white/5 border border-white/20 rounded-xl text-white font-medium hover:from-white/20 hover:to-white/10 transition-all duration-300 shadow-lg"
               >
                 <span className="drop-shadow-sm [text-shadow:_0_1px_4px_rgb(0_0_0_/_30%)]">Load Template</span>
@@ -180,16 +332,17 @@ const ImportExportPanel: React.FC<{ dates: ImportantDate[], onImport: (dates: Im
       )}
 
       {/* Import/Export Buttons */}
-      <div className="flex space-x-3">
+  
+      <div className="flex space-x-2">
         <button
           onClick={() => {
             setShowImportPanel(!showImportPanel);
             setShowExportPanel(false);
           }}
-          className="flex-1 py-3 px-4 bg-gradient-to-r from-blue-500/20 to-blue-500/30 border border-blue-400/30 rounded-xl text-white font-medium hover:from-blue-500/30 hover:to-blue-500/40 transition-all duration-300 flex items-center justify-center space-x-2 shadow-lg"
+          className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all duration-300 flex items-center space-x-1.5 text-sm"
         >
-          <Upload size={16} />
-          <span className="drop-shadow-sm [text-shadow:_0_1px_4px_rgb(0_0_0_/_30%)]">Import CSV</span>
+          <Upload size={14} />
+          <span className="drop-shadow-sm [text-shadow:_0_1px_4px_rgb(0_0_0_/_30%)]">Import</span>
         </button>
         
         {dates.length > 0 && (
@@ -198,10 +351,10 @@ const ImportExportPanel: React.FC<{ dates: ImportantDate[], onImport: (dates: Im
               setShowExportPanel(!showExportPanel);
               setShowImportPanel(false);
             }}
-            className="flex-1 py-3 px-4 bg-gradient-to-r from-green-500/20 to-green-500/30 border border-green-400/30 rounded-xl text-white font-medium hover:from-green-500/30 hover:to-green-500/40 transition-all duration-300 flex items-center justify-center space-x-2 shadow-lg"
+            className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all duration-300 flex items-center space-x-1.5 text-sm"
           >
-            <Download size={16} />
-            <span className="drop-shadow-sm [text-shadow:_0_1px_4px_rgb(0_0_0_/_30%)]">Export CSV</span>
+            <Download size={14} />
+            <span className="drop-shadow-sm [text-shadow:_0_1px_4px_rgb(0_0_0_/_30%)]">Export</span>
           </button>
         )}
       </div>

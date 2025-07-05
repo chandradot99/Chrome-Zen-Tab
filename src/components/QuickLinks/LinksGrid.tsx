@@ -20,9 +20,6 @@ const QuickLinksGrid: React.FC<QuickLinksGridProps> = ({
   onLinkClick,
   onLinkDelete
 }) => {
-  const isCompact = links.length > 4;
-  const gridCols = links.length <= 4 ? 'grid-cols-2' : 'grid-cols-3';
-
   // Calculate empty slots for visual consistency
   const getEmptySlots = () => {
     if (links.length >= 12) return 0;
@@ -50,7 +47,7 @@ const QuickLinksGrid: React.FC<QuickLinksGridProps> = ({
   }
 
   return (
-    <div className={`grid gap-3 mb-4 ${gridCols}`}>
+    <div className={`grid gap-3 mb-4 grid-cols-3`}>
       {/* Render existing links */}
       {links.map((link) => (
         <QuickLinkItem
@@ -58,7 +55,7 @@ const QuickLinksGrid: React.FC<QuickLinksGridProps> = ({
           link={link}
           onClick={onLinkClick}
           onDelete={onLinkDelete}
-          isCompact={isCompact}
+          isCompact
         />
       ))}
       

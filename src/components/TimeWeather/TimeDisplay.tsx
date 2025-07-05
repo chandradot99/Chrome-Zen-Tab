@@ -14,9 +14,6 @@ interface TimeDisplayProps {
   onTimezoneUpdate?: (timezones: Timezone[]) => void;
 }
 
-// Declare chrome types
-declare const chrome: any;
-
 const TimeDisplay: React.FC<TimeDisplayProps> = ({ onTimezoneUpdate }) => {
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
   const [showSettings, setShowSettings] = useState(false);

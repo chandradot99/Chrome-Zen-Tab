@@ -1,8 +1,5 @@
 import { useState, useEffect } from "react";
 
-// Declare chrome types
-declare const chrome: any;
-
 export const useStorage = <T>(key: string, defaultValue: T) => {
   const [value, setValue] = useState<T>(defaultValue);
   const [isLoaded, setIsLoaded] = useState(false);

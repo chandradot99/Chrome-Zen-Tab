@@ -77,30 +77,38 @@ const DatesList: React.FC<DatesListProps> = ({ dates, onDelete }) => {
     days: calculateDaysUntilDate(date.date)
   })).sort((a, b) => a.days - b.days);
 
-  const displayedDates = showAll ? datesWithUpdatedDays : datesWithUpdatedDays.slice(0, 5);
-  const hasMoreDates = datesWithUpdatedDays.length > 5;
+  const displayedDates = showAll ? datesWithUpdatedDays : datesWithUpdatedDays.slice(0, 3);
+  const hasMoreDates = datesWithUpdatedDays.length > 3;
 
   const renderDateItem = (date: ImportantDate, showTypeLabel = false) => {
     return (
-      <div key={date.id} className="group">
-        <div className={`bg-white/5 border rounded-xl p-4 hover:bg-white/10 transition-all duration-300 ${
+      <div key={date.id} className="group relative">
+        <div className={`bg-white/5 border rounded-xl p-3 hover:bg-white/10 transition-all duration-300 relative ${
           date.days === 0 
             ? 'border-yellow-400/50 bg-yellow-400/10' 
             : date.days <= 7 
               ? 'border-orange-400/30 bg-orange-400/5'
               : 'border-white/10'
         }`}>
+          {/* Close button - positioned absolutely */}
+          <button
+            onClick={() => onDelete(date.id)}
+            className="absolute -top-2 -right-2 w-6 h-6 bg-red-500/80 hover:bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center text-xs shadow-lg z-10"
+            title="Delete date"
+          >
+            <X size={12} />
+          </button>
+
           <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <div className="flex items-center mr-3">
-                <div className={`w-2 h-2 ${date.color} rounded-full mr-2`}></div>
+            <div className="flex items-center flex-1 min-w-0">
+              <div className="flex items-center mr-3 flex-shrink-0">
                 <span className="text-lg">{getTypeEmoji(date.type)}</span>
               </div>
-              <div>
-                <div className="text-white font-medium drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
+              <div className="flex-1 min-w-0">
+                <div className="text-white font-medium drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)] truncate">
                   {date.name}
                 </div>
-                <div className="text-white/60 text-sm drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
+                <div className="text-white/60 text-sm drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)] truncate">
                   {formatDisplayDate(date.date)}
                   {showTypeLabel && (
                     <>
@@ -111,30 +119,21 @@ const DatesList: React.FC<DatesListProps> = ({ dates, onDelete }) => {
                 </div>
               </div>
             </div>
-            <div className="flex items-center space-x-3">
-              <div className="text-right">
-                <div className={`font-semibold text-sm drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)] ${
-                  date.days === 0 
-                    ? 'text-yellow-400' 
-                    : date.days <= 7 
-                      ? 'text-orange-400'
-                      : 'text-white/90'
-                }`}>
-                  {formatTimeUntil(date.days)}
-                </div>
-                {date.days > 0 && (
-                  <div className="text-white/50 text-xs drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
-                    away
-                  </div>
-                )}
+            <div className="text-right flex-shrink-0 ml-3">
+              <div className={`font-semibold text-sm drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)] ${
+                date.days === 0 
+                  ? 'text-yellow-400' 
+                  : date.days <= 7 
+                    ? 'text-orange-400'
+                    : 'text-white/90'
+              }`}>
+                {formatTimeUntil(date.days)}
               </div>
-              <button
-                onClick={() => onDelete(date.id)}
-                className="opacity-0 group-hover:opacity-100 text-white/50 hover:text-red-400 transition-all duration-200 p-1 drop-shadow-lg"
-                title="Delete date"
-              >
-                <X size={14} />
-              </button>
+              {date.days > 0 && (
+                <div className="text-white/50 text-xs drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
+                  away
+                </div>
+              )}
             </div>
           </div>
           
@@ -180,6 +179,13 @@ const DatesList: React.FC<DatesListProps> = ({ dates, onDelete }) => {
         {displayedDates.map((date) => renderDateItem(date))}
       </div>
 
+      {/* Additional dates when showing all */}
+      {showAll && datesWithUpdatedDays.length > 3 && (
+        <div className="mt-3 space-y-3 max-h-80 overflow-y-auto pr-1">
+          {datesWithUpdatedDays.slice(3).map((date) => renderDateItem(date, true))}
+        </div>
+      )}
+
       {/* Show More/Less Button */}
       {hasMoreDates && (
         <button
@@ -187,7 +193,7 @@ const DatesList: React.FC<DatesListProps> = ({ dates, onDelete }) => {
           className="w-full mt-3 py-2 px-4 bg-white/5 border border-white/10 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all duration-300 flex items-center justify-center space-x-2"
         >
           <span className="text-sm drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
-            {showAll ? 'Show Less' : `Show ${datesWithUpdatedDays.length - 5} More`}
+            {showAll ? 'Show Less' : `Show ${datesWithUpdatedDays.length - 3} More`}
           </span>
           {showAll ? (
             <ChevronUp size={16} className="drop-shadow-lg" />
@@ -196,20 +202,6 @@ const DatesList: React.FC<DatesListProps> = ({ dates, onDelete }) => {
           )}
         </button>
       )}
-
-      {/* Additional dates when showing all */}
-      {showAll && datesWithUpdatedDays.length > 5 && (
-        <div className="mt-3 space-y-3 max-h-64 overflow-y-auto">
-          {datesWithUpdatedDays.slice(5).map((date) => renderDateItem(date, true))}
-        </div>
-      )}
-
-      {/* Clean yearly reminder note */}
-      <div className="mt-4 text-center">
-        <div className="text-white/30 text-xs drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
-          📅 All dates automatically repeat every year • Hover to delete
-        </div>
-      </div>
     </div>
   );
 };

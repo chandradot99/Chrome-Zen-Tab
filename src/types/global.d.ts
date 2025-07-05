@@ -57,37 +57,6 @@ declare namespace chrome {
       tabId?: number;
     }): void;
   }
-
-  export namespace notifications {
-    export interface NotificationOptions {
-      type: string;
-      iconUrl: string;
-      title: string;
-      message: string;
-      buttons?: Array<{ title: string }>;
-    }
-
-    export function create(
-      notificationId: string,
-      options: NotificationOptions,
-      callback?: (notificationId: string) => void
-    ): void;
-
-    export function clear(
-      notificationId: string,
-      callback?: (wasCleared: boolean) => void
-    ): void;
-
-    export const onClicked: {
-      addListener(callback: (notificationId: string) => void): void;
-    };
-
-    export const onButtonClicked: {
-      addListener(
-        callback: (notificationId: string, buttonIndex: number) => void
-      ): void;
-    };
-  }
 }
 
 // Process environment for webpack DefinePlugin
@@ -97,5 +66,4 @@ declare const process: {
   };
 };
 
-// Make chrome available globally
 declare const chrome: typeof chrome;

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Star, Link as LinkIcon } from 'lucide-react';
+import { Plus, Star } from 'lucide-react';
 import AddLinkForm from './AddLinkForm';
 import QuickLinksGrid from './LinksGrid';
 import PredefinedLinksPanel from './PredefinedLinks';
+import { STORAGE_KEYS } from '../../utils/constants';
 
 interface QuickLink {
   id: string;
@@ -19,12 +20,6 @@ interface PredefinedLink {
   color: string;
   category: string;
 }
-
-// Chrome storage helper
-const QUICK_LINKS_STORAGE_KEY = 'zenTab_quick_links';
-
-// Declare chrome types
-declare const chrome: any;
 
 const QuickLinksManager: React.FC = () => {
   const [quickLinks, setQuickLinks] = useState<QuickLink[]>([]);
@@ -50,9 +45,9 @@ const QuickLinksManager: React.FC = () => {
   const loadQuickLinks = async () => {
     try {
       if (typeof chrome !== 'undefined' && chrome.storage) {
-        chrome.storage.sync.get([QUICK_LINKS_STORAGE_KEY], (result: any) => {
-          if (result[QUICK_LINKS_STORAGE_KEY]) {
-            setQuickLinks(result[QUICK_LINKS_STORAGE_KEY]);
+        chrome.storage.sync.get([STORAGE_KEYS.QUICK_LINKS], (result: any) => {
+          if (result[STORAGE_KEYS.QUICK_LINKS]) {
+            setQuickLinks(result[STORAGE_KEYS.QUICK_LINKS]);
           } else {
             // Set default links if none exist
             setDefaultLinks();
@@ -60,7 +55,7 @@ const QuickLinksManager: React.FC = () => {
           setIsLoading(false);
         });
       } else {
-        const stored = localStorage.getItem(QUICK_LINKS_STORAGE_KEY);
+        const stored = localStorage.getItem(STORAGE_KEYS.QUICK_LINKS);
         if (stored) {
           setQuickLinks(JSON.parse(stored));
         } else {
@@ -89,9 +84,9 @@ const QuickLinksManager: React.FC = () => {
   const saveQuickLinks = (linksToSave: QuickLink[]) => {
     try {
       if (typeof chrome !== 'undefined' && chrome.storage) {
-        chrome.storage.sync.set({ [QUICK_LINKS_STORAGE_KEY]: linksToSave });
+        chrome.storage.sync.set({ [STORAGE_KEYS.QUICK_LINKS]: linksToSave });
       } else {
-        localStorage.setItem(QUICK_LINKS_STORAGE_KEY, JSON.stringify(linksToSave));
+        localStorage.setItem(STORAGE_KEYS.QUICK_LINKS, JSON.stringify(linksToSave));
       }
     } catch (error) {
       console.error('Error saving quick links:', error);
@@ -164,18 +159,10 @@ const QuickLinksManager: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
-          <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-xl flex items-center justify-center mr-3">
-            <LinkIcon size={16} className="text-white" />
-          </div>
           <h2 className="text-md font-semibold text-white drop-shadow-lg [text-shadow:_0_2px_8px_rgb(0_0_0_/_40%)]">
             Quick Links
           </h2>
         </div>
-        {quickLinks.length > 0 && (
-          <div className="text-white/60 text-sm drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
-            {quickLinks.length}/12
-          </div>
-        )}
       </div>
 
       {/* Quick Links Grid */}
@@ -188,23 +175,25 @@ const QuickLinksManager: React.FC = () => {
       {/* Action Buttons and Forms */}
       <div className="space-y-3">
         {!showAddForm && !showPredefined && (
-          <div className="flex space-x-3">
+          <div className="flex space-x-2">
             <button
               onClick={() => setShowAddForm(true)}
-              className="flex-1 py-3 px-4 bg-gradient-to-r from-white/10 to-white/5 border border-white/20 rounded-xl text-white font-medium hover:from-white/20 hover:to-white/10 transition-all duration-300 flex items-center justify-center shadow-lg"
+              className="flex-1 py-2 px-3 bg-white/5 border border-white/10 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all duration-300 flex items-center justify-center text-sm"
+              title="Add custom website link"
             >
-              <Plus size={16} className="mr-2" />
+              <Plus size={14} className="mr-1.5" />
               <span className="drop-shadow-sm [text-shadow:_0_1px_4px_rgb(0_0_0_/_30%)]">
-                Add Custom Link
+                Add Link
               </span>
             </button>
             <button
               onClick={() => setShowPredefined(true)}
-              className="flex-1 py-3 px-4 bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-400/30 rounded-xl text-white font-medium hover:from-blue-500/30 hover:to-purple-500/30 transition-all duration-300 flex items-center justify-center shadow-lg"
+              className="flex-1 py-2 px-3 bg-white/5 border border-white/10 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all duration-300 flex items-center justify-center text-sm"
+              title="Choose from popular websites"
             >
-              <Star size={16} className="mr-2" />
+              <Star size={14} className="mr-1.5" />
               <span className="drop-shadow-sm [text-shadow:_0_1px_4px_rgb(0_0_0_/_30%)]">
-                Popular Links
+                Popular
               </span>
             </button>
           </div>

@@ -3,7 +3,6 @@ import DateForm from './DateForm';
 import ImportExportPanel from './ImportExportPanel';
 import DatesList from './DatesList';
 import { STORAGE_KEYS } from '../../utils/constants';
-import { Calendar } from 'lucide-react';
 
 interface ImportantDate {
   id: string;
@@ -21,14 +20,10 @@ interface DateFormData {
   type: 'birthday' | 'anniversary' | 'other';
 }
 
-// Declare chrome types
-declare const chrome: any;
-
 const MyDates: React.FC = () => {
   const [dates, setDates] = useState<ImportantDate[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 
   const colors = [
     'bg-gradient-to-r from-pink-500 to-rose-500',
@@ -48,10 +43,9 @@ const MyDates: React.FC = () => {
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
 
-  // Load dates and check notification permission on component mount
+  // Load dates on component mount
   useEffect(() => {
     loadDates();
-    checkNotificationPermission();
   }, []);
 
   // Recalculate days until date daily
@@ -86,39 +80,6 @@ const MyDates: React.FC = () => {
       return () => clearTimeout(timeoutId);
     }
   }, [dates.length]);
-
-  const checkNotificationPermission = async () => {
-    try {
-      if (typeof chrome !== 'undefined' && chrome.notifications) {
-        setNotificationsEnabled(true);
-      } else if ('Notification' in window) {
-        setNotificationsEnabled(Notification.permission === 'granted');
-      }
-    } catch (error) {
-      console.error('Error checking notification permission:', error);
-    }
-  };
-
-  const requestNotificationPermission = async () => {
-    try {
-      if (typeof chrome !== 'undefined' && chrome.notifications) {
-        setNotificationsEnabled(true);
-        return true;
-      } else if ('Notification' in window) {
-        const permission = await Notification.requestPermission();
-        const granted = permission === 'granted';
-        setNotificationsEnabled(granted);
-        return granted;
-      }
-    } catch (error) {
-      console.error('Error requesting notification permission:', error);
-    }
-    return false;
-  };
-
-  const handleEnableNotifications = async () => {
-    await requestNotificationPermission();
-  };
 
   const loadDates = async () => {
     try {
@@ -203,20 +164,6 @@ const MyDates: React.FC = () => {
     saveDates(updatedDates);
   };
 
-  const getUpcomingDatesCount = () => {
-    return dates.filter(d => d.days <= 30).length;
-  };
-
-  const getTypeCounts = () => {
-    const counts = { birthday: 0, anniversary: 0, other: 0 };
-    dates.forEach(date => {
-      counts[date.type]++;
-    });
-    return counts;
-  };
-
-  const typeCounts = getTypeCounts();
-
   if (isLoading) {
     return (
       <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl p-4 shadow-2xl">
@@ -234,53 +181,11 @@ const MyDates: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
-          <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-xl flex items-center justify-center mr-3">
-            <Calendar size={16} className="text-white" />
-          </div>
           <div>
             <h2 className="text-md font-semibold text-white drop-shadow-lg [text-shadow:_0_2px_8px_rgb(0_0_0_/_40%)]">
               My Dates
             </h2>
-            {getUpcomingDatesCount() > 0 ? (
-              <div className="text-white/60 text-xs drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
-                {getUpcomingDatesCount()} coming up this month
-              </div>
-            ) : dates.length > 0 ? (
-              <div className="text-white/60 text-xs drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
-                {typeCounts.birthday > 0 && `${typeCounts.birthday} 🎂`}
-                {typeCounts.birthday > 0 && typeCounts.anniversary > 0 && ' • '}
-                {typeCounts.anniversary > 0 && `${typeCounts.anniversary} 💕`}
-                {(typeCounts.birthday > 0 || typeCounts.anniversary > 0) && typeCounts.other > 0 && ' • '}
-                {typeCounts.other > 0 && `${typeCounts.other} ⭐`}
-              </div>
-            ) : null}
           </div>
-        </div>
-        <div className="text-right">
-          {dates.length > 0 && (
-            <div className="text-white/60 text-sm mb-1 drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
-              {dates.length} saved
-            </div>
-          )}
-          {dates.length === 0 && (
-            <div className="text-white/60 text-sm mb-1 drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
-              0 saved
-            </div>
-          )}
-          {!notificationsEnabled && (
-            <button
-              onClick={handleEnableNotifications}
-              className="text-yellow-400 hover:text-yellow-300 text-xs transition-colors drop-shadow-lg"
-              title="Enable date notifications"
-            >
-              🔔 Enable alerts
-            </button>
-          )}
-          {notificationsEnabled && (
-            <div className="text-green-400 text-xs flex items-center drop-shadow-lg">
-              ✅ Alerts on
-            </div>
-          )}
         </div>
       </div>
 

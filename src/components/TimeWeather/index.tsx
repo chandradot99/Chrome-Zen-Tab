@@ -2,7 +2,7 @@ import React from 'react';
 import TimeDisplay from './TimeDisplay';
 import WeatherDisplay from './WeatherDisplay';
 import GreetingSection from './GreetingSection';
-import TimezoneDisplay, { Timezone } from './TimeZoneDisplay';
+import TimezoneClocks, { Timezone } from './TimezoneClocks';
 
 interface WeatherData {
   temperature: number;
@@ -29,7 +29,7 @@ const TimeWeather: React.FC<TimeWeatherProps> = ({ onWeatherUpdate }) => {
   return (
     <div className="flex justify-between items-center mb-6">
       <TimeDisplay onTimezoneUpdate={handleTimezoneUpdate} />
-      {timezones.length ?  <TimezoneDisplay timezones={timezones} /> : <GreetingSection />}
+      {timezones.length ?  <TimezoneClocks timezones={timezones} /> : <GreetingSection />}
       <WeatherDisplay onWeatherUpdate={onWeatherUpdate} />
     </div>
   );

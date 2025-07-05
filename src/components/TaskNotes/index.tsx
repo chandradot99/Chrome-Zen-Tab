@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, CheckSquare, Edit3 } from 'lucide-react';
+import { CheckSquare, Edit3 } from 'lucide-react';
 import TaskManager from './TaskManager';
 import NotesEditor from './NotesEditor';
 import { STORAGE_KEYS } from '../../utils/constants';
@@ -113,54 +113,68 @@ const TabbedTasksNotes: React.FC = () => {
 
   return (
     <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl p-4 shadow-2xl">
-      {/* Header */}
+      {/* Header with Toggle */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
-          <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-xl flex items-center justify-center mr-3">
-            <FileText size={16} className="text-white" />
+          <div className={`w-8 h-8 rounded-xl flex items-center justify-center mr-3 ${
+            activeTab === 'tasks' 
+              ? 'bg-gradient-to-r from-orange-500 to-red-500' 
+              : 'bg-gradient-to-r from-blue-500 to-indigo-500'
+          }`}>
+            {activeTab === 'tasks' ? (
+              <CheckSquare size={16} className="text-white" />
+            ) : (
+              <Edit3 size={16} className="text-white" />
+            )}
           </div>
           <div>
             <h2 className="text-md font-semibold text-white drop-shadow-lg [text-shadow:_0_2px_8px_rgb(0_0_0_/_40%)]">
-              {activeTab === 'tasks' ? 'Daily Tasks' : 'Notes'}
+              {activeTab === 'tasks' ? 'Daily Tasks' : 'Quick Notes'}
             </h2>
+            <div className="text-white/60 text-xs drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
+              {activeTab === 'tasks' 
+                ? `${taskStats.pending} pending • ${taskStats.completed} completed`
+                : `${notesStats.words} words • ${notesStats.lines} lines`
+              }
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Tab Toggle */}
-      <div className="flex bg-white/10 rounded-xl p-1 mb-4">
-        <button
-          onClick={() => setActiveTab('tasks')}
-          className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center space-x-2 ${
-            activeTab === 'tasks'
-              ? 'bg-white/20 text-white shadow-lg'
-              : 'text-white/70 hover:text-white hover:bg-white/5'
-          }`}
-        >
-          <CheckSquare size={18} />
-          <span className="drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">Tasks</span>
-          {taskStats.pending > 0 && (
-            <span className="bg-orange-500/80 text-white text-xs px-2 py-0.5 rounded-full">
-              {taskStats.pending}
-            </span>
-          )}
-        </button>
-        <button
-          onClick={() => setActiveTab('notes')}
-          className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center space-x-2 ${
-            activeTab === 'notes'
-              ? 'bg-white/20 text-white shadow-lg'
-              : 'text-white/70 hover:text-white hover:bg-white/5'
-          }`}
-        >
-          <Edit3 size={18} />
-          <span className="drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">Notes</span>
-          {notesStats.words > 0 && (
-            <span className="bg-blue-500/80 text-white text-xs px-2 py-0.5 rounded-full">
-              {notesStats.words}
-            </span>
-          )}
-        </button>
+        {/* Compact Toggle Switch */}
+        <div className="flex bg-white/10 rounded-lg p-0.5">
+          <button
+            onClick={() => setActiveTab('tasks')}
+            className={`px-3 py-2 rounded-md font-medium transition-all duration-200 flex items-center space-x-1.5 text-sm ${
+              activeTab === 'tasks'
+                ? 'bg-white/20 text-white shadow-lg'
+                : 'text-white/70 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <CheckSquare size={14} />
+            <span className="drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">Tasks</span>
+            {taskStats.pending > 0 && (
+              <span className="bg-orange-500/80 text-white text-xs px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                {taskStats.pending}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab('notes')}
+            className={`px-3 py-2 rounded-md font-medium transition-all duration-200 flex items-center space-x-1.5 text-sm ${
+              activeTab === 'notes'
+                ? 'bg-white/20 text-white shadow-lg'
+                : 'text-white/70 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <Edit3 size={14} />
+            <span className="drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">Notes</span>
+            {notesStats.words > 0 && (
+              <span className="bg-blue-500/80 text-white text-xs px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                {notesStats.words}
+              </span>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Content Area */}
