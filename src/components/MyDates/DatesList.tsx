@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, X } from 'lucide-react';
 
 interface ImportantDate {
   id: string;
   name: string;
-  date: string;
+  date: string; // YYYY-MM-DD format
   type: 'birthday' | 'anniversary' | 'other';
   days: number;
   color: string;
@@ -29,6 +29,29 @@ const DatesList: React.FC<DatesListProps> = ({ dates, onDelete }) => {
     { value: 'other', label: 'Important Date', emoji: '⭐' }
   ];
 
+  // Enhanced date calculation for yearly reminders
+  const calculateDaysUntilDate = (dateString: string): number => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to start of day
+    
+    const [year, month, day] = dateString.split('-').map(Number);
+    
+    // Create date for this year
+    let targetDate = new Date(today.getFullYear(), month - 1, day);
+    targetDate.setHours(0, 0, 0, 0);
+    
+    // If the date has already passed this year, move to next year
+    if (targetDate < today) {
+      targetDate = new Date(today.getFullYear() + 1, month - 1, day);
+      targetDate.setHours(0, 0, 0, 0);
+    }
+    
+    const diffTime = targetDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    return diffDays;
+  };
+
   const formatDisplayDate = (dateString: string) => {
     const [year, month, day] = dateString.split('-').map(Number);
     return `${months[month - 1]} ${day}`;
@@ -39,77 +62,111 @@ const DatesList: React.FC<DatesListProps> = ({ dates, onDelete }) => {
     return typeInfo ? typeInfo.emoji : '📅';
   };
 
-  // Get displayed dates (top 5 or all)
-  const displayedDates = showAll ? dates : dates.slice(0, 5);
-  const hasMoreDates = dates.length > 5;
+  const formatTimeUntil = (days: number) => {
+    if (days === 0) return 'Today! 🎉';
+    if (days === 1) return 'Tomorrow';
+    if (days <= 7) return `${days} days`;
+    if (days <= 30) return `${days} days`;
+    if (days <= 60) return `${Math.round(days / 7)} weeks`;
+    return `${Math.round(days / 30)} months`;
+  };
 
-  const renderDateItem = (date: ImportantDate, showTypeLabel = false) => (
-    <div key={date.id} className="group">
-      <div className={`backdrop-blur-sm bg-white/5 border rounded-xl p-4 hover:bg-white/10 transition-all duration-300 ${
-        date.days === 0 
-          ? 'border-yellow-400/50 bg-yellow-400/10' 
-          : date.days <= 7 
-            ? 'border-orange-400/30 bg-orange-400/5'
-            : 'border-white/10'
-      }`}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <div className="flex items-center mr-3">
-              <div className={`w-2 h-2 ${date.color} rounded-full mr-2`}></div>
-              <span className="text-lg">{getTypeEmoji(date.type)}</span>
-            </div>
-            <div>
-              <div className="text-white font-medium drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
-                {date.name}
+  // Get displayed dates with recalculated days
+  const datesWithUpdatedDays = dates.map(date => ({
+    ...date,
+    days: calculateDaysUntilDate(date.date)
+  })).sort((a, b) => a.days - b.days);
+
+  const displayedDates = showAll ? datesWithUpdatedDays : datesWithUpdatedDays.slice(0, 5);
+  const hasMoreDates = datesWithUpdatedDays.length > 5;
+
+  const renderDateItem = (date: ImportantDate, showTypeLabel = false) => {
+    return (
+      <div key={date.id} className="group">
+        <div className={`bg-white/5 border rounded-xl p-4 hover:bg-white/10 transition-all duration-300 ${
+          date.days === 0 
+            ? 'border-yellow-400/50 bg-yellow-400/10' 
+            : date.days <= 7 
+              ? 'border-orange-400/30 bg-orange-400/5'
+              : 'border-white/10'
+        }`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <div className="flex items-center mr-3">
+                <div className={`w-2 h-2 ${date.color} rounded-full mr-2`}></div>
+                <span className="text-lg">{getTypeEmoji(date.type)}</span>
               </div>
-              <div className="text-white/60 text-sm drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
-                {formatDisplayDate(date.date)}
-                {showTypeLabel && (
-                  <>
-                    {' • '}
-                    {dateTypes.find(t => t.value === date.type)?.label}
-                  </>
+              <div>
+                <div className="text-white font-medium drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
+                  {date.name}
+                </div>
+                <div className="text-white/60 text-sm drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
+                  {formatDisplayDate(date.date)}
+                  {showTypeLabel && (
+                    <>
+                      {' • '}
+                      {dateTypes.find(t => t.value === date.type)?.label}
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="text-right">
+                <div className={`font-semibold text-sm drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)] ${
+                  date.days === 0 
+                    ? 'text-yellow-400' 
+                    : date.days <= 7 
+                      ? 'text-orange-400'
+                      : 'text-white/90'
+                }`}>
+                  {formatTimeUntil(date.days)}
+                </div>
+                {date.days > 0 && (
+                  <div className="text-white/50 text-xs drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
+                    away
+                  </div>
                 )}
               </div>
+              <button
+                onClick={() => onDelete(date.id)}
+                className="opacity-0 group-hover:opacity-100 text-white/50 hover:text-red-400 transition-all duration-200 p-1 drop-shadow-lg"
+                title="Delete date"
+              >
+                <X size={14} />
+              </button>
             </div>
           </div>
-          <div className="flex items-center space-x-3">
-            <div className="text-right">
-              <div className={`font-semibold text-sm drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)] ${
-                date.days === 0 
-                  ? 'text-yellow-400' 
-                  : date.days <= 7 
-                    ? 'text-orange-400'
-                    : 'text-white/90'
-              }`}>
-                {date.days === 0 ? 'Today! 🎉' : date.days}
+          
+          {/* Clean progress indicator for upcoming dates */}
+          {date.days <= 14 && date.days > 0 && (
+            <div className="mt-3 pt-2 border-t border-white/10">
+              <div className="flex items-center justify-between text-xs text-white/50 mb-1">
+                <span>Upcoming</span>
+                <span>{Math.max(0, Math.round((14 - date.days) / 14 * 100))}%</span>
               </div>
-              {date.days > 0 && (
-                <div className="text-white/50 text-xs drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
-                  {date.days === 1 ? 'day' : 'days'}
-                </div>
-              )}
+              <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+                <div 
+                  className={`h-full transition-all duration-500 ${
+                    date.days <= 3 ? 'bg-red-400' : date.days <= 7 ? 'bg-orange-400' : 'bg-blue-400'
+                  }`}
+                  style={{ width: `${Math.max(0, (14 - date.days) / 14 * 100)}%` }}
+                ></div>
+              </div>
             </div>
-            <button
-              onClick={() => onDelete(date.id)}
-              className="opacity-0 group-hover:opacity-100 text-white/50 hover:text-red-400 transition-all duration-200 p-1 drop-shadow-lg"
-              title="Delete date"
-            >
-              ✕
-            </button>
-          </div>
+          )}
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
-  if (dates.length === 0) {
+  if (datesWithUpdatedDays.length === 0) {
     return (
-      <div className="text-center py-8">
-        <div className="text-white/40 text-sm mb-2 drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
+      <div className="text-center py-8 mb-4">
+        <div className="text-white/50 mb-2 drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
           No important dates added yet
         </div>
-        <div className="text-white/30 text-xs drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
+        <div className="text-white/30 text-sm drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
           Add birthdays, anniversaries, and other special dates!
         </div>
       </div>
@@ -118,7 +175,7 @@ const DatesList: React.FC<DatesListProps> = ({ dates, onDelete }) => {
 
   return (
     <div className="mb-4">
-      {/* Top 5 or All Dates */}
+      {/* Dates List */}
       <div className="space-y-3">
         {displayedDates.map((date) => renderDateItem(date))}
       </div>
@@ -130,7 +187,7 @@ const DatesList: React.FC<DatesListProps> = ({ dates, onDelete }) => {
           className="w-full mt-3 py-2 px-4 bg-white/5 border border-white/10 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all duration-300 flex items-center justify-center space-x-2"
         >
           <span className="text-sm drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
-            {showAll ? 'Show Less' : `Show ${dates.length - 5} More`}
+            {showAll ? 'Show Less' : `Show ${datesWithUpdatedDays.length - 5} More`}
           </span>
           {showAll ? (
             <ChevronUp size={16} className="drop-shadow-lg" />
@@ -140,12 +197,19 @@ const DatesList: React.FC<DatesListProps> = ({ dates, onDelete }) => {
         </button>
       )}
 
-      {/* Scrollable Area when showing all (if more than 8 total) */}
-      {showAll && dates.length > 8 && (
-        <div className="mt-3 max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent space-y-3">
-          {dates.slice(8).map((date) => renderDateItem(date, true))}
+      {/* Additional dates when showing all */}
+      {showAll && datesWithUpdatedDays.length > 5 && (
+        <div className="mt-3 space-y-3 max-h-64 overflow-y-auto">
+          {datesWithUpdatedDays.slice(5).map((date) => renderDateItem(date, true))}
         </div>
       )}
+
+      {/* Clean yearly reminder note */}
+      <div className="mt-4 text-center">
+        <div className="text-white/30 text-xs drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
+          📅 All dates automatically repeat every year • Hover to delete
+        </div>
+      </div>
     </div>
   );
 };
