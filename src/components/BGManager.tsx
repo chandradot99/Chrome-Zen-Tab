@@ -8,29 +8,84 @@ interface BackgroundManagerProps {
 const BackgroundManager: React.FC<BackgroundManagerProps> = ({ children }) => {
   const [currentBackground, setCurrentBackground] = useState<string>('');
   const [currentSeed, setCurrentSeed] = useState<string>('');
+  const [currentCategory, setCurrentCategory] = useState<string>('');
 
   // Fallback gradient background
   const fallbackBackground = 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)';
 
-  // Generate a random seed
-  const generateRandomSeed = () => {
-    const timestamp = Date.now().toString(36);
-    const random = Math.random().toString(36).substring(2, 15);
-    return `zentab-${timestamp}-${random}`;
+  // Get current time of day
+  const getTimeOfDay = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 8) return 'sunrise';
+    if (hour >= 8 && hour < 17) return 'day';
+    if (hour >= 17 && hour < 20) return 'sunset';
+    return 'night';
   };
 
-  // Load a random background
-  const loadRandomBackground = () => {
-    const seed = generateRandomSeed();
-    const newUrl = `https://picsum.photos/seed/${seed}/1920/1080`;
+  // Get current season
+  const getCurrentSeason = () => {
+    const month = new Date().getMonth();
+    if (month >= 2 && month <= 4) return 'spring';
+    if (month >= 5 && month <= 7) return 'summer';
+    if (month >= 8 && month <= 10) return 'autumn';
+    return 'winter';
+  };
+
+  // Get appropriate nature category based on time and season
+  const getNatureCategory = () => {
+    const timeOfDay = getTimeOfDay();
+    const season = getCurrentSeason();
     
-    console.log('Loading background with seed:', seed);
+    // Time-based categories
+    const timeCategories = {
+      sunrise: ['sunrise', 'dawn', 'morning', 'golden-hour', 'misty-landscape'],
+      day: ['landscape', 'mountains', 'forest', 'meadow', 'clear-sky'],
+      sunset: ['sunset', 'dusk', 'golden-light', 'evening-sky', 'warm-colors'],
+      night: ['starry-sky', 'moonlit', 'dark-forest', 'night-sky', 'aurora']
+    };
+
+    // Season-based categories  
+    const seasonCategories = {
+      spring: ['blooming-trees', 'green-fields', 'flowers', 'fresh-leaves'],
+      summer: ['sunny-day', 'blue-sky', 'bright-landscape', 'ocean'],
+      autumn: ['fall-colors', 'golden-leaves', 'harvest', 'warm-tones'],
+      winter: ['snow-landscape', 'frost', 'winter-trees', 'cold-beauty']
+    };
+
+    // Combine categories based on current conditions
+    const availableCategories = [
+      ...timeCategories[timeOfDay],
+      ...seasonCategories[season]
+    ];
+
+    // Return a random category from the appropriate ones
+    return availableCategories[Math.floor(Math.random() * availableCategories.length)];
+  };
+
+  // Generate a smart seed based on category and randomness
+  const generateSmartSeed = () => {
+    const category = getNatureCategory();
+    const timestamp = Date.now().toString(36);
+    const random = Math.random().toString(36).substring(2, 10);
+    return {
+      seed: `${category}-${timestamp}-${random}`,
+      category: category
+    };
+  };
+
+  // Load a contextual nature background
+  const loadContextualBackground = () => {
+    const { seed, category } = generateSmartSeed();
+    const newUrl = `https://picsum.photos/seed/${seed}/1920/1080?blur=1`;
+    
+    console.log('Loading contextual background:', { category, seed });
     
     // Pre-load the image silently
     const img = new Image();
     img.onload = () => {
       setCurrentBackground(newUrl);
       setCurrentSeed(seed);
+      setCurrentCategory(category);
     };
     img.onerror = () => {
       console.warn('Failed to load background image');
@@ -40,13 +95,22 @@ const BackgroundManager: React.FC<BackgroundManagerProps> = ({ children }) => {
 
   // Initial load
   useEffect(() => {
-    loadRandomBackground();
+    loadContextualBackground();
+  }, []);
+
+  // Refresh every hour to get time-appropriate backgrounds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadContextualBackground();
+    }, 60 * 60 * 1000); // Every hour
+
+    return () => clearInterval(interval);
   }, []);
 
   // Listen for refresh events from BackgroundInfoCard
   useEffect(() => {
     const handleBackgroundRefresh = () => {
-      loadRandomBackground();
+      loadContextualBackground();
     };
 
     window.addEventListener('backgroundRefresh', handleBackgroundRefresh);
@@ -56,14 +120,28 @@ const BackgroundManager: React.FC<BackgroundManagerProps> = ({ children }) => {
     };
   }, []);
 
+  // Get time-appropriate overlay opacity
+  const getTimeBasedOverlay = () => {
+    const timeOfDay = getTimeOfDay();
+    switch (timeOfDay) {
+      case 'sunrise':
+      case 'sunset':
+        return 'bg-black/60'; // Lighter for golden hours
+      case 'night':
+        return 'bg-black/80'; // Darker for night
+      default:
+        return 'bg-black/70'; // Default for day
+    }
+  };
+
   // Author Attribution Component
   const AuthorAttribution = () => {
     return (
       <div className="fixed bottom-4 right-4 z-30">
-        <div className="backdrop-blur-sm bg-black/50 border border-white/10 rounded-lg px-3 py-2 shadow-lg">
+        <div className="backdrop-blur-sm bg-black/20 border border-white/10 rounded-lg px-3 py-2 shadow-lg">
           <div className="flex items-center space-x-2 text-white/70 text-xs">
             <span>📸</span>
-            <span>Photo by</span>
+            <span>Nature by</span>
             <a 
               href="https://picsum.photos"
               target="_blank"
@@ -95,8 +173,8 @@ const BackgroundManager: React.FC<BackgroundManagerProps> = ({ children }) => {
         />
       )}
       
-      {/* Overlay for better text readability */}
-      <div className="fixed inset-0 bg-black/60 transition-all duration-1000"></div>
+      {/* Time-based Overlay for better text readability */}
+      <div className={`fixed inset-0 transition-all duration-1000 ${getTimeBasedOverlay()}`}></div>
 
       {/* Floating Orbs Background Effects */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
@@ -121,6 +199,15 @@ export const BackgroundInfoCard: React.FC = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshCount, setRefreshCount] = useState(0);
 
+  // Get current time period for display
+  const getTimePeriod = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 8) return 'Dawn';
+    if (hour >= 8 && hour < 17) return 'Day';
+    if (hour >= 17 && hour < 20) return 'Dusk';
+    return 'Night';
+  };
+
   // Handle manual refresh
   const handleRefreshBackground = () => {
     setIsRefreshing(true);
@@ -140,7 +227,7 @@ export const BackgroundInfoCard: React.FC = () => {
       <div className="text-center">
         <div className="flex items-center justify-between mb-3">
           <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
-            <span className="text-white text-sm">🖼️</span>
+            <span className="text-white text-sm">🌿</span>
           </div>
           
           {/* Refresh Button */}
@@ -148,7 +235,7 @@ export const BackgroundInfoCard: React.FC = () => {
             onClick={handleRefreshBackground}
             disabled={isRefreshing}
             className="p-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-white/70 hover:text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Get new background image"
+            title="Get new nature background"
           >
             <RotateCcw 
               size={16} 
@@ -158,23 +245,21 @@ export const BackgroundInfoCard: React.FC = () => {
         </div>
         
         <h3 className="text-white font-medium text-sm mb-2 drop-shadow-lg [text-shadow:_0_2px_8px_rgb(0_0_0_/_40%)]">
-          Random Background
+          Nature Background
         </h3>
         <p className="text-white/60 text-xs drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)] mb-2">
-          Beautiful random images for inspiration
+          Beautiful nature for every moment
         </p>
         
-        {/* Refresh Count */}
-        {refreshCount > 0 && (
-          <div className="inline-flex items-center px-2 py-1 bg-white/10 rounded-full mb-2">
-            <span className="text-white/50 text-xs">
-              Refreshed {refreshCount} times
-            </span>
-          </div>
-        )}
+        {/* Time Period Info */}
+        <div className="inline-flex items-center px-2 py-1 bg-white/10 rounded-full mb-2">
+          <span className="text-white/50 text-xs">
+            {getTimePeriod()} • Natural scenery
+          </span>
+        </div>
         
         <div className="text-white/40 text-xs">
-          {isRefreshing ? 'Loading new image...' : 'Click refresh for new image'}
+          {isRefreshing ? 'Loading nature scene...' : 'Updates hourly with time'}
         </div>
       </div>
     </div>

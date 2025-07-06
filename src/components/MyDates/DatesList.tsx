@@ -176,15 +176,8 @@ const DatesList: React.FC<DatesListProps> = ({ dates, onDelete }) => {
     <div className="mb-4">
       {/* Dates List */}
       <div className="space-y-3">
-        {displayedDates.map((date) => renderDateItem(date))}
+        {displayedDates.map((date) => renderDateItem(date, showAll))}
       </div>
-
-      {/* Additional dates when showing all */}
-      {showAll && datesWithUpdatedDays.length > 3 && (
-        <div className="mt-3 space-y-3 max-h-80 overflow-y-auto pr-1">
-          {datesWithUpdatedDays.slice(3).map((date) => renderDateItem(date, true))}
-        </div>
-      )}
 
       {/* Show More/Less Button */}
       {hasMoreDates && (
