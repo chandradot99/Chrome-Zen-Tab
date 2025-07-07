@@ -172,7 +172,7 @@ const TimeDisplay: React.FC<TimeDisplayProps> = ({ onTimezoneUpdate }) => {
           </div>
           
           {/* Main Time */}
-          <div className="text-3xl font-thin text-white mb-1 tracking-wide drop-shadow-2xl [text-shadow:_0_4px_12px_rgb(0_0_0_/_50%)]">
+          <div className="text-3xl font-medium text-white mb-1 tracking-wide drop-shadow-2xl [text-shadow:_0_4px_12px_rgb(0_0_0_/_50%)]">
             {formatTime(currentTime)}
           </div>
           
