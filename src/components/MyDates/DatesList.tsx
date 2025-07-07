@@ -71,6 +71,20 @@ const DatesList: React.FC<DatesListProps> = ({ dates, onDelete }) => {
     return `${Math.round(days / 30)} months`;
   };
 
+  // Calculate age or years for anniversaries
+  const calculateYearsInfo = (dateString: string, type: string): string => {
+    const [originalYear, month, day] = dateString.split('-').map(Number);
+    const currentYear = new Date().getFullYear();
+    const years = currentYear - originalYear;
+    
+    if (type === 'birthday' && years > 0) {
+      return `Turning ${years + 1}`;
+    } else if (type === 'anniversary' && years > 0) {
+      return `${years + 1} years`;
+    }
+    return '';
+  };
+
   // Get displayed dates with recalculated days
   const datesWithUpdatedDays = dates.map(date => ({
     ...date,
@@ -142,7 +156,14 @@ const DatesList: React.FC<DatesListProps> = ({ dates, onDelete }) => {
             <div className="mt-3 pt-2 border-t border-white/10">
               <div className="flex items-center justify-between text-xs text-white/50 mb-1">
                 <span>Upcoming</span>
-                <span>{Math.max(0, Math.round((14 - date.days) / 14 * 100))}%</span>
+                <div className="flex items-center space-x-2">
+                  {calculateYearsInfo(date.date, date.type) && (
+                    <span className="text-white/70 font-medium">
+                      {calculateYearsInfo(date.date, date.type)}
+                    </span>
+                  )}
+                  <span>{Math.max(0, Math.round((14 - date.days) / 14 * 100))}%</span>
+                </div>
               </div>
               <div className="h-1 bg-white/10 rounded-full overflow-hidden">
                 <div 

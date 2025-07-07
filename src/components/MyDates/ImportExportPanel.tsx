@@ -106,7 +106,7 @@ const ImportExportPanel: React.FC<{ dates: ImportantDate[], onImport: (dates: Im
       return;
     }
 
-    const headers = ['Name', 'Type', 'Month', 'Day', 'Date'];
+    const headers = ['Name', 'Type', 'Month', 'Day', 'Year', 'Date'];
     const csvData = dates.map(date => {
       const [year, month, day] = date.date.split('-').map(Number);
       return [
@@ -114,6 +114,7 @@ const ImportExportPanel: React.FC<{ dates: ImportantDate[], onImport: (dates: Im
         date.type,
         months[month - 1],
         day,
+        year, // Include the actual year from the date
         date.date
       ];
     });
@@ -135,14 +136,38 @@ const ImportExportPanel: React.FC<{ dates: ImportantDate[], onImport: (dates: Im
     setShowExportPanel(false);
   };
 
-  const handleImportCSV = () => {
-    if (!importData.trim()) {
-      alert('Please paste CSV data first!');
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      alert('Please select a CSV file!');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      if (content) {
+        setImportData(content);
+        // Auto-process the file content
+        processImportData(content);
+      }
+    };
+    reader.readAsText(file);
+    
+    // Reset file input
+    event.target.value = '';
+  };
+
+  const processImportData = (data: string) => {
+    if (!data.trim()) {
+      alert('File is empty!');
       return;
     }
 
     try {
-      const lines = importData.trim().split('\n').filter(line => line.trim());
+      const lines = data.trim().split('\n').filter(line => line.trim());
       if (lines.length < 2) {
         alert('CSV must contain at least a header row and one data row!');
         return;
@@ -156,6 +181,7 @@ const ImportExportPanel: React.FC<{ dates: ImportantDate[], onImport: (dates: Im
       const dateIndex = headers.findIndex(h => h.includes('date') && !h.includes('month') && !h.includes('day'));
       const monthIndex = headers.findIndex(h => h.includes('month'));
       const dayIndex = headers.findIndex(h => h.includes('day'));
+      const yearIndex = headers.findIndex(h => h.includes('year'));
       
       if (nameIndex === -1) {
         alert('CSV must contain a "Name" column!');
@@ -180,10 +206,11 @@ const ImportExportPanel: React.FC<{ dates: ImportantDate[], onImport: (dates: Im
         if (dateIndex !== -1 && row[dateIndex]) {
           dateStr = row[dateIndex];
         }
-        // If no date column or empty, try to construct from month/day
+        // If no date column or empty, try to construct from month/day/year
         else if (monthIndex !== -1 && dayIndex !== -1 && row[monthIndex] && row[dayIndex]) {
           const monthStr = row[monthIndex].trim();
           const dayStr = row[dayIndex].trim();
+          const yearStr = yearIndex !== -1 && row[yearIndex] ? row[yearIndex].trim() : new Date().getFullYear().toString();
           
           // Convert month name to number if needed
           let monthNum = parseInt(monthStr);
@@ -192,8 +219,7 @@ const ImportExportPanel: React.FC<{ dates: ImportantDate[], onImport: (dates: Im
           }
           
           if (monthNum >= 1 && monthNum <= 12) {
-            const currentYear = new Date().getFullYear();
-            dateStr = `${currentYear}-${String(monthNum).padStart(2, '0')}-${String(dayStr).padStart(2, '0')}`;
+            dateStr = `${yearStr}-${String(monthNum).padStart(2, '0')}-${String(dayStr).padStart(2, '0')}`;
           }
         }
         
@@ -243,8 +269,16 @@ const ImportExportPanel: React.FC<{ dates: ImportantDate[], onImport: (dates: Im
       alert(message);
     } catch (error) {
       console.error('Import error:', error);
-      alert('Error importing CSV data. Please check the format and try again.\n\nMake sure your CSV has proper headers and date formats.');
+      alert('Error importing CSV data. Please check the format and try again.');
     }
+  };
+
+  const handleImportCSV = () => {
+    if (!importData.trim()) {
+      alert('Please paste CSV data first!');
+      return;
+    }
+    processImportData(importData);
   };
 
   const loadTemplate = () => {
@@ -276,6 +310,25 @@ const ImportExportPanel: React.FC<{ dates: ImportantDate[], onImport: (dates: Im
             <div className="text-white/70 text-xs mb-2">
               Supported formats: Name (required), Type (optional), Date (YYYY-MM-DD, MM/DD/YYYY, etc.)
             </div>
+            
+            {/* File Upload Option */}
+            <div className="flex items-center gap-3 p-3 bg-white/5 rounded-lg border border-white/10">
+              <Upload size={16} className="text-white/60" />
+              <div className="flex-1">
+                <label htmlFor="csv-file" className="text-white/80 text-sm cursor-pointer hover:text-white transition-colors">
+                  Upload CSV File
+                </label>
+                <input
+                  id="csv-file"
+                  type="file"
+                  accept=".csv"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+              </div>
+              <div className="text-white/50 text-xs">or paste below</div>
+            </div>
+            
             <textarea
               value={importData}
               onChange={(e) => setImportData(e.target.value)}
@@ -332,7 +385,6 @@ const ImportExportPanel: React.FC<{ dates: ImportantDate[], onImport: (dates: Im
       )}
 
       {/* Import/Export Buttons */}
-  
       <div className="flex space-x-2">
         <button
           onClick={() => {
