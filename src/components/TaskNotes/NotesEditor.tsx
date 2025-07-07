@@ -13,12 +13,39 @@ const NotesEditor: React.FC<NotesEditorProps> = ({ notes, onNotesChange }) => {
   const [copied, setCopied] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
-  // Auto-save indicator
+  // Check if notes are truly empty (ignoring HTML tags)
+  const isNotesEmpty = (): boolean => {
+    if (!notes || notes.trim() === '') return true;
+    
+    // Check if it's just empty HTML tags
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = notes;
+    const textContent = tempDiv.textContent || tempDiv.innerText || '';
+    return textContent.trim() === '';
+  };
+
+  // Auto-save indicator  
   useEffect(() => {
-    if (notes.trim()) {
+    if (!isNotesEmpty()) {
       setLastSaved(new Date());
     }
   }, [notes]);
+
+  // Suppress React Quill warnings in development
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      const originalWarn = console.warn;
+      console.warn = (...args) => {
+        if (args[0]?.includes?.('findDOMNode')) return;
+        if (args[0]?.includes?.('DOMNodeInserted')) return;
+        originalWarn(...args);
+      };
+      
+      return () => {
+        console.warn = originalWarn;
+      };
+    }
+  }, []);
 
   // Quill modules configuration - minimal toolbar for chrome extension
   const modules = useMemo(() => ({
@@ -35,13 +62,13 @@ const NotesEditor: React.FC<NotesEditorProps> = ({ notes, onNotesChange }) => {
   ];
 
   const clearNotes = (): void => {
-    if (notes.trim() && confirm('Clear all notes? This cannot be undone.')) {
+    if (!isNotesEmpty() && confirm('Clear all notes? This cannot be undone.')) {
       onNotesChange('');
     }
   };
 
   const copyNotes = async (): Promise<void> => {
-    if (notes.trim()) {
+    if (!isNotesEmpty()) {
       try {
         // Copy plain text version
         const tempDiv = document.createElement('div');
@@ -53,6 +80,20 @@ const NotesEditor: React.FC<NotesEditorProps> = ({ notes, onNotesChange }) => {
       } catch (err) {
         console.error('Failed to copy notes:', err);
       }
+    }
+  };
+
+  const handleNotesChange = (content: string): void => {
+    // Always check if the content is truly empty after any change
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = content;
+    const textContent = tempDiv.textContent || tempDiv.innerText || '';
+    
+    // If no actual text content, clear completely
+    if (!textContent || textContent.trim() === '') {
+      onNotesChange('');
+    } else {
+      onNotesChange(content);
     }
   };
 
@@ -95,7 +136,7 @@ const NotesEditor: React.FC<NotesEditorProps> = ({ notes, onNotesChange }) => {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-4">
           <div className="text-white/60 text-sm drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
-            {notesStats.chars > 0 
+            {!isNotesEmpty() 
               ? `${notesStats.words} words • ${notesStats.lines} lines`
               : 'Rich text notes'
             }
@@ -108,7 +149,7 @@ const NotesEditor: React.FC<NotesEditorProps> = ({ notes, onNotesChange }) => {
         </div>
         
         <div className="flex items-center space-x-2">
-          {notes.trim() && (
+          {!isNotesEmpty() && (
             <>
               <button
                 onClick={copyNotes}
@@ -141,7 +182,7 @@ const NotesEditor: React.FC<NotesEditorProps> = ({ notes, onNotesChange }) => {
         <ReactQuill
           theme="snow"
           value={notes}
-          onChange={onNotesChange}
+          onChange={handleNotesChange}
           modules={modules}
           formats={formats}
           placeholder="Start writing with rich text formatting..."
@@ -155,7 +196,7 @@ const NotesEditor: React.FC<NotesEditorProps> = ({ notes, onNotesChange }) => {
 
       {/* Simple Status */}
       <div className="mt-3 text-xs text-white/40 drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
-        {notesStats.chars > 0 && `${notesStats.chars} characters`}
+        {!isNotesEmpty() && `${notesStats.chars} characters`}
       </div>
     </div>
   );

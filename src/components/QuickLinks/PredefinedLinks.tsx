@@ -65,6 +65,7 @@ const PredefinedLinksPanel: React.FC<PredefinedLinksPanelProps> = ({
     { name: 'CodePen', iconName: 'Code', url: 'https://codepen.io', color: 'from-green-500 to-green-600', category: 'Dev' },
     
     // Social & Entertainment  
+    { name: 'Whatsapp', iconName: 'MessageSquare', url: 'https://web.whatsapp.com/', color: 'from-orange-500 to-red-500', category: 'Social' },
     { name: 'YouTube', iconName: 'Youtube', url: 'https://youtube.com', color: 'from-red-600 to-red-700', category: 'Social' },
     { name: 'Twitter', iconName: 'Twitter', url: 'https://twitter.com', color: 'from-blue-400 to-blue-500', category: 'Social' },
     { name: 'LinkedIn', iconName: 'Linkedin', url: 'https://linkedin.com', color: 'from-blue-600 to-blue-700', category: 'Social' },

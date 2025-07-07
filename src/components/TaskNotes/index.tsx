@@ -55,6 +55,8 @@ const TabbedTasksNotes: React.FC = () => {
       const storedNotes = localStorage.getItem(STORAGE_KEYS.NOTES);
       if (storedNotes) {
         setNotes(storedNotes);
+      } else {
+        setNotes('');
       }
 
       setIsLoading(false);

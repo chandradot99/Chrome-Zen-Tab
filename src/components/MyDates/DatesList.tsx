@@ -151,27 +151,14 @@ const DatesList: React.FC<DatesListProps> = ({ dates, onDelete }) => {
             </div>
           </div>
           
-          {/* Clean progress indicator for upcoming dates */}
-          {date.days <= 14 && date.days > 0 && (
+          {/* Age/Anniversary info for upcoming dates */}
+          {date.days <= 14 && date.days > 0 && calculateYearsInfo(date.date, date.type) && (
             <div className="mt-3 pt-2 border-t border-white/10">
-              <div className="flex items-center justify-between text-xs text-white/50 mb-1">
-                <span>Upcoming</span>
-                <div className="flex items-center space-x-2">
-                  {calculateYearsInfo(date.date, date.type) && (
-                    <span className="text-white/70 font-medium">
-                      {calculateYearsInfo(date.date, date.type)}
-                    </span>
-                  )}
-                  <span>{Math.max(0, Math.round((14 - date.days) / 14 * 100))}%</span>
-                </div>
-              </div>
-              <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-                <div 
-                  className={`h-full transition-all duration-500 ${
-                    date.days <= 3 ? 'bg-red-400' : date.days <= 7 ? 'bg-orange-400' : 'bg-blue-400'
-                  }`}
-                  style={{ width: `${Math.max(0, (14 - date.days) / 14 * 100)}%` }}
-                ></div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-white/50">Upcoming</span>
+                <span className="text-white/70 font-medium">
+                  {calculateYearsInfo(date.date, date.type)}
+                </span>
               </div>
             </div>
           )}

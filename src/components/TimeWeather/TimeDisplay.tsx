@@ -99,8 +99,19 @@ const TimeDisplay: React.FC<TimeDisplayProps> = ({ onTimezoneUpdate }) => {
     }
   };
 
-  const formatTime = (date: Date): string => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const formatTime = (date: Date): { time: string; period: string } => {
+    const timeString = date.toLocaleTimeString([], { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: true
+    });
+    
+    // Split the time and AM/PM
+    const parts = timeString.split(' ');
+    return {
+      time: parts[0], // "1:24"
+      period: parts[1] // "PM"
+    };
   };
 
   const formatDate = (date: Date): string => {
@@ -172,8 +183,13 @@ const TimeDisplay: React.FC<TimeDisplayProps> = ({ onTimezoneUpdate }) => {
           </div>
           
           {/* Main Time */}
-          <div className="text-3xl font-medium text-white mb-1 tracking-wide drop-shadow-2xl [text-shadow:_0_4px_12px_rgb(0_0_0_/_50%)]">
-            {formatTime(currentTime)}
+          <div className="flex items-baseline justify-center space-x-1 mb-1">
+            <div className="text-3xl font-medium text-white tracking-wide drop-shadow-2xl [text-shadow:_0_4px_12px_rgb(0_0_0_/_50%)]">
+              {formatTime(currentTime).time}
+            </div>
+            <div className="text-lg text-white/80 font-light drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)] mb-1">
+              {formatTime(currentTime).period}
+            </div>
           </div>
           
           {/* Date */}
