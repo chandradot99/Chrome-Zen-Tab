@@ -18,7 +18,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({ tasks, onTasksChange }) => {
   const [newTaskText, setNewTaskText] = useState<string>('');
   const [showTaskInput, setShowTaskInput] = useState<boolean>(false);
   const [recentlyCompleted, setRecentlyCompleted] = useState<string | null>(null);
-  const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('pending');
+  const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all');
   const taskInputRef = useRef<HTMLInputElement>(null);
 
   // Clear recently completed animation after delay
