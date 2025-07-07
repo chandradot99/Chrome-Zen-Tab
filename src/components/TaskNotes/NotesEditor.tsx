@@ -1,5 +1,7 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { RotateCcw, Maximize2, Minimize2, Copy, Check } from 'lucide-react';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 interface NotesEditorProps {
   notes: string;
@@ -7,7 +9,7 @@ interface NotesEditorProps {
 }
 
 const NotesEditor: React.FC<NotesEditorProps> = ({ notes, onNotesChange }) => {
-  const notesRef = useRef<HTMLTextAreaElement>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
@@ -18,6 +20,20 @@ const NotesEditor: React.FC<NotesEditorProps> = ({ notes, onNotesChange }) => {
     }
   }, [notes]);
 
+  // Quill modules configuration - minimal toolbar for chrome extension
+  const modules = useMemo(() => ({
+    toolbar: [
+      ['bold', 'italic', 'underline'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'header': [1, 2, 3, false] }]
+    ],
+  }), []);
+
+  const formats = [
+    'header', 'bold', 'italic', 'underline', 'strike',
+    'list', 'bullet'
+  ];
+
   const clearNotes = (): void => {
     if (notes.trim() && confirm('Clear all notes? This cannot be undone.')) {
       onNotesChange('');
@@ -27,7 +43,11 @@ const NotesEditor: React.FC<NotesEditorProps> = ({ notes, onNotesChange }) => {
   const copyNotes = async (): Promise<void> => {
     if (notes.trim()) {
       try {
-        await navigator.clipboard.writeText(notes);
+        // Copy plain text version
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = notes;
+        const plainText = tempDiv.textContent || tempDiv.innerText || '';
+        await navigator.clipboard.writeText(plainText);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       } catch (err) {
@@ -36,10 +56,22 @@ const NotesEditor: React.FC<NotesEditorProps> = ({ notes, onNotesChange }) => {
     }
   };
 
+  const toggleExpanded = (): void => {
+    setIsExpanded(!isExpanded);
+  };
+
   const getNotesStats = () => {
-    const lines = notes.split('\n').filter(line => line.trim()).length;
-    const words = notes.trim() ? notes.trim().split(/\s+/).length : 0;
-    const chars = notes.length;
+    // Get plain text stats from HTML content
+    let textContent = notes;
+    if (notes.includes('<')) {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = notes;
+      textContent = tempDiv.textContent || tempDiv.innerText || '';
+    }
+    
+    const lines = textContent.split('\n').filter(line => line.trim()).length;
+    const words = textContent.trim() ? textContent.trim().split(/\s+/).length : 0;
+    const chars = textContent.length;
     return { lines, words, chars };
   };
 
@@ -56,14 +88,16 @@ const NotesEditor: React.FC<NotesEditorProps> = ({ notes, onNotesChange }) => {
   const notesStats = getNotesStats();
 
   return (
-    <div className="flex flex-col transition-all duration-300 h-[420px]">
+    <div className={`flex flex-col transition-all duration-300 ${
+      isExpanded ? 'h-[500px]' : 'h-[420px]'
+    }`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-4">
           <div className="text-white/60 text-sm drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
             {notesStats.chars > 0 
               ? `${notesStats.words} words • ${notesStats.lines} lines`
-              : 'Quick notes & thoughts'
+              : 'Rich text notes'
             }
           </div>
           {lastSaved && (
@@ -92,23 +126,29 @@ const NotesEditor: React.FC<NotesEditorProps> = ({ notes, onNotesChange }) => {
               </button>
             </>
           )}
+          <button
+            onClick={toggleExpanded}
+            className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white/50 hover:text-white/80"
+            title={isExpanded ? "Minimize" : "Expand"}
+          >
+            {isExpanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+          </button>
         </div>
       </div>
 
-      {/* Editor */}
-      <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex-1 flex flex-col relative">
-        <textarea 
-          ref={notesRef}
+      {/* React Quill Editor */}
+      <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden flex-1 flex flex-col relative">
+        <ReactQuill
+          theme="snow"
           value={notes}
-          onChange={(e) => onNotesChange(e.target.value)}
-          className="w-full flex-1 bg-transparent text-white placeholder-white/40 resize-none outline-none drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)] text-base leading-relaxed"
-          placeholder="Jot down quick thoughts, meeting notes, ideas...
-
-Auto-saves as you type ✓"
-          style={{ 
-            fontFamily: 'system-ui, -apple-system, sans-serif',
-            fontSize: '15px',
-            lineHeight: '1.6'
+          onChange={onNotesChange}
+          modules={modules}
+          formats={formats}
+          placeholder="Start writing with rich text formatting..."
+          style={{
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column'
           }}
         />
       </div>

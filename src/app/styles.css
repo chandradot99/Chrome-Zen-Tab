@@ -11,3 +11,88 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Quill Editor Styles */
+.ql-toolbar {
+  border-radius: 16px 16px 0 0;
+}
+
+.ql-container {
+  border: none;
+  background: transparent;
+  color: white;
+  font-family: system-ui, -apple-system, sans-serif;
+  flex: 1;
+}
+
+.ql-toolbar.ql-snow {
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.ql-container.ql-snow {
+  border: none;
+}
+
+.ql-editor {
+  color: white;
+  padding: 16px;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.ql-editor.ql-blank::before {
+  color: rgba(255, 255, 255, 0.4);
+  font-style: normal;
+}
+
+.ql-editor h1, .ql-editor h2, .ql-editor h3 {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.ql-editor blockquote {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.ql-editor code {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.ql-editor .ql-code-block-container {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  margin: 8px 0;
+}
+
+.ql-stroke {
+  stroke: white !important;
+  stroke-width: 1 !important;
+}
+
+.ql-bold .ql-stroke {
+  stroke-width: 2 !important;
+}
+
+.ql-picker {
+  color: white !important;
+}
+
+.ql-picker-label {
+  color: white !important;
+  border: none !important;
+}
+
+.ql-picker-options {
+  margin-top: 0.5rem !important;
+  backdrop-filter: blur(24px) !important;
+  background-color: rgb(0, 0, 0) !important;
+  border: none !important;
+  border-radius: 0.75rem !important;
+  padding: 1rem !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  z-index: 50 !important;
+}

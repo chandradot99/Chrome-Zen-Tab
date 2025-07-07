@@ -261,11 +261,11 @@ const TaskManager: React.FC<TaskManagerProps> = ({ tasks, onTasksChange }) => {
                 </div>
               </div>
             ) : (
-              <div className="flex-1 overflow-y-auto space-y-2 pr-2">
+              <div className="flex-1 overflow-y-auto space-y-1 pr-2">
                 {filteredTasks.map((task) => (
                   <div 
                     key={task.id}
-                    className={`group flex items-center justify-between px-3 py-2 rounded-xl hover:bg-white/5 transition-all duration-300 ${
+                    className={`group flex items-center justify-between px-2 py-1 rounded-xl hover:bg-white/5 transition-all duration-300 ${
                       recentlyCompleted === task.id ? 'bg-green-500/20 animate-pulse' : ''
                     } ${task.priority && !task.completed ? 'border-l-2 border-yellow-400/50' : ''}`}
                   >
