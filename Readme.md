@@ -1,199 +1,217 @@
-# Chrome Extension React Scaffold
+# 🌟 Productivity Dashboard - Chrome Extension
 
-A production-ready scaffold for building Chrome extensions with React, TypeScript, and Tailwind CSS. Supports both **Popup** and **Side Panel** modes with easy configuration switching.
+A beautiful, feature-rich Chrome extension that transforms your new tab into a productivity powerhouse. Keep track of important dates, manage tasks, take rich-text notes, and access quick links - all in one elegant interface.
 
-![Chrome Extension](https://img.shields.io/badge/Chrome%20Extension-Manifest%20V3-blue)
-![React](https://img.shields.io/badge/React-18-61dafb)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.3-3178c6)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-3.3-38bdf8)
+![Extension Preview](./preview.png)
 
-## 🚀 Quick Start
+## ✨ Features
 
+### 🕒 **Multi-Timezone Clock Widget**
+- Display multiple world times simultaneously
+- Beautiful clock faces with location names
+- Perfect for remote teams and global communications
+
+### 📅 **Smart Date Tracking**
+- Track birthdays, anniversaries, and important dates
+- **Age calculation** - Shows "Turning 26" for birthdays
+- **Anniversary tracking** - Displays "5 years" for anniversaries
+- **Progress indicators** for upcoming dates
+- **Color-coded urgency** - Today, this week, or upcoming
+- **Import/Export** CSV functionality for easy backup
+
+### ✅ **Advanced Task Manager**
+- Create and organize daily tasks
+- **Priority system** with star indicators
+- **Smart filtering** - All, Todo, Done views
+- **Progress tracking** with completion statistics
+- **Visual feedback** with completion animations
+- Auto-save functionality
+
+### 📝 **Rich Text Notes**
+- **WYSIWYG editor** powered by React Quill
+- Format text with bold, italic, headers, lists
+- **Expandable interface** for longer writing sessions
+- **Auto-save** as you type
+- **Copy to clipboard** functionality
+- **Character & word count** tracking
+
+### 🔗 **Quick Links Dashboard**
+- Customizable shortcuts to your favorite sites
+- **Popular suggestions** - Google, Gmail, GitHub, YouTube, etc.
+- **Clean grid layout** with icons
+- **Add custom links** functionality
+
+### 🎨 **Beautiful Design**
+- **Glassmorphism UI** with backdrop blur effects
+- **Dark theme** optimized for daily use
+- **Smooth animations** and micro-interactions
+- **Responsive layout** that adapts to different screen sizes
+- **Accessibility focused** with proper contrast and keyboard navigation
+
+## 🚀 Installation
+
+### From Chrome Web Store
+1. Visit the [Chrome Web Store](#) (link coming soon)
+2. Click "Add to Chrome"
+3. Confirm the installation
+4. Open a new tab to start using!
+
+### Manual Installation (Development)
+1. Clone this repository
 ```bash
-# Clone or download this scaffold
-git clone git@github.com:chandradot99/react-chrome-extension-scaffold.git my-chrome-extension
-cd my-chrome-extension
+git clone https://github.com/your-username/productivity-dashboard-extension.git
+cd productivity-dashboard-extension
+```
 
-# Install dependencies
+2. Install dependencies
+```bash
 npm install
-
-# Build for popup mode (default)
-npm run build:popup
-
-# Build for side panel mode (Chrome 114+)
-npm run build:sidepanel
-
-# Build for new tab mode
-npm run build:newtab
-
-# Development mode with file watching
-npm run dev:popup        # Popup mode
-npm run dev:sidepanel    # Side panel mode
-npm run dev:newtab       # New tab mode
 ```
 
-## 📁 Project Structure
-
-```
-chrome-extension-react-scaffold/
-├── configs/
-│   ├── manifest.newtab.json            # New Tab mode manifest
-│   ├── manifest.popup.json             # Popup mode manifest
-│   └── manifest.sidepanel.json         # Side panel mode manifest
-├── src/
-│   ├── app/
-│   │   ├── index.tsx                   # React entry point
-│   │   ├── Counter.tsx                 # Main Counter component (dynamic)
-│   │   ├── app.newtab.html             # Newtab mode HTML
-│   │   ├── app.popup.html              # Popup mode HTML
-│   │   ├── app.sidepanel.html          # Side panel mode HTML
-│   │   └── styles.css                  # Tailwind CSS
-│   ├── background/
-│   │   ├── background.newtab.ts        # Newtab mode background script
-│   │   ├── background.popup.ts         # Popup mode background script
-│   │   └── background.sidepanel.ts     # Side panel mode background script
-│   ├── content/
-│   │   └── content.ts                  # Content script (shared)
-│   ├── types/
-│   │   └── global.d.ts                 # Chrome API type definitions
-│   └── icons/                          # Extension icons
-├── dist/                               # Build output (generated)
-├── package.json
-├── webpack.config.js                   # Dynamic webpack config
-├── tsconfig.json
-├── tailwind.config.js
-└── README.md
-```
-
-## 🎯 Available Scripts
-
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Development with default mode (popup) |
-| `npm run dev:popup` | Development mode - popup |
-| `npm run dev:newtab` | Development mode - newtab |
-| `npm run dev:sidepanel` | Development mode - side panel |
-| `npm run build` | Build with default mode (popup) |
-| `npm run build:popup` | Build for popup mode |
-| `npm run build:sidepanel` | Build for side panel mode |
-| `npm run build:newtab` | Build for new tab mode |
-| `npm run clean` | Clean dist directory |
-| `npm run zip` | Build and create extension.zip |
-| `npm run type-check` | Run TypeScript type checking |
-
-## 🔧 Configuration Modes
-
-### Popup Mode (Default)
-- Traditional Chrome extension popup
-- Compatible with all Chrome versions
-- 380x500px popup window
-- Activated by clicking extension icon
-
-### Side Panel Mode (Chrome 114+)
-- Persistent side panel interface
-- Resizable by user
-- Full browser height
-- Opens via extension icon click
-- Stays open across tab navigation
-
-## 🚀 Getting Started with Your Extension
-
-1. **Clone the scaffold:**
-   ```bash
-   git clone <repo-url> my-extension
-   cd my-extension
-   ```
-
-2. **Customize your extension:**
-   - Update `package.json` name and description
-   - Modify manifests in `configs/` directory
-   - Replace icons in `src/icons/`
-   - Edit `src/popup/Popup.tsx` for your UI
-
-3. **Choose your mode and build:**
-   ```bash
-   npm run build:popup     # or
-   npm run build:sidepanel
-   ```
-
-4. **Load in Chrome:**
-   - Open `chrome://extensions/`
-   - Enable "Developer mode"
-   - Click "Load unpacked"
-   - Select the `dist` folder
-
-## 🎨 Customization
-
-### Changing Extension Details
-Edit the manifest files in `configs/`:
-- `manifest.popup.json` - Popup mode configuration
-- `manifest.sidepanel.json` - Side panel mode configuration
-
-### Modifying UI
-- **Main component:** `src/popup/Popup.tsx`
-- **Styling:** Uses Tailwind CSS classes
-- **Colors:** Modify `tailwind.config.js` for custom colors
-- **Layout:** Component automatically adapts to popup/sidepanel mode
-
-### Adding Features
-- **Background tasks:** Edit `src/background/background.*.ts`
-- **Content scripts:** Modify `src/content/content.ts`
-- **Storage:** Uses `chrome.storage.sync` API
-- **Messaging:** Built-in message passing system
-
-### Chrome APIs Used
-- `chrome.tabs` - Tab information and management
-- `chrome.storage` - Persistent data storage
-- `chrome.runtime` - Message passing and lifecycle
-- `chrome.action` - Extension icon and badge
-- `chrome.sidePanel` - Side panel API (Chrome 114+)
-
-## 📦 Building for Production
-
+3. Build the extension
 ```bash
-# Clean and build
-npm run clean
-npm run build:popup  # or build:sidepanel
-
-# Create distribution zip
-npm run zip
+npm run build
 ```
 
-The `extension.zip` file will be created in the project root, ready for Chrome Web Store submission.
+4. Load in Chrome
+   - Open Chrome and go to `chrome://extensions/`
+   - Enable "Developer mode" (top right toggle)
+   - Click "Load unpacked"
+   - Select the `build` folder
 
-## 🔍 Development Tips
+## 🎯 Quick Start Guide
 
-1. **Hot Reloading:** Use `npm run dev:*` commands for file watching
-2. **Type Safety:** TypeScript is configured for Chrome extension APIs
-3. **Debugging:** Source maps enabled in development mode
-4. **Testing:** Load unpacked extension for rapid iteration
+### Adding Your First Date
+1. Click the **"+ Add Date"** button in the dates widget
+2. Enter the person's name and select date
+3. Choose type: Birthday, Anniversary, or Important Date
+4. Watch as the countdown and age calculation appear!
 
-## 🌟 Features Included
+### Creating Tasks
+1. Navigate to the **Tasks** tab
+2. Click **"Add Task"** or press the plus button
+3. Type your task and press Enter
+4. Click the star to mark as priority
+5. Check off completed tasks
 
-- ✅ React 18 with TypeScript
-- ✅ Tailwind CSS for styling
-- ✅ Webpack build system
-- ✅ Chrome extension API types
-- ✅ Hot reloading in development
-- ✅ Popup and Side Panel modes
-- ✅ Message passing system
-- ✅ Storage management
-- ✅ Content script integration
-- ✅ Production optimization
+### Taking Notes
+1. Switch to the **Notes** tab
+2. Use the rich text toolbar for formatting
+3. **Bold**, *italic*, headers, and lists are supported
+4. Notes auto-save as you type
+5. Click expand for full-screen writing
 
-## 📋 Browser Compatibility
+### Managing Quick Links
+1. Scroll to the **Quick Links** section
+2. Click **"+ Add Link"** to add custom shortcuts
+3. Use **"Popular"** for common sites
+4. Organize your most-used websites
 
-- **Popup Mode:** Chrome 88+ (Manifest V3)
-- **Side Panel Mode:** Chrome 114+ required
+## 💾 Data Management
+
+### Import/Export Dates
+- **Export**: Download your dates as CSV for backup
+- **Import**: Upload CSV files or paste data directly
+- **Supported formats**: Name, Type, Date columns
+- **Smart parsing**: Handles various date formats (MM/DD/YYYY, YYYY-MM-DD, etc.)
+
+### Data Storage
+- All data is stored locally in your browser
+- **Privacy-focused**: No data sent to external servers
+- **Auto-backup**: Export your data regularly for safety
+- **Cross-device sync**: Use import/export to transfer between devices
+
+## 🛠️ Tech Stack
+
+- **React 18** with TypeScript
+- **Tailwind CSS** for styling
+- **React Quill** for rich text editing
+- **Lucide React** for beautiful icons
+- **Chrome Extension Manifest V3**
+- **Local Storage** for data persistence
+
+## 🎨 Design Philosophy
+
+This extension follows modern design principles:
+- **Minimalism**: Clean, uncluttered interface
+- **Functionality**: Every feature serves a clear purpose
+- **Accessibility**: High contrast, keyboard navigation, screen reader support
+- **Performance**: Fast loading, smooth animations, efficient rendering
+- **Consistency**: Unified design language throughout
 
 ## 🤝 Contributing
 
-This scaffold is designed to be forked and customized for your specific needs. Feel free to:
-- Add new features
-- Improve the build system
-- Enhance the UI components
-- Add more Chrome API integrations
+We welcome contributions! Here's how to get started:
+
+1. **Fork the repository**
+2. **Create a feature branch**
+   ```bash
+   git checkout -b feature/amazing-feature
+   ```
+3. **Make your changes**
+4. **Follow the code style**
+   - Use TypeScript for type safety
+   - Follow the existing component structure
+   - Add proper error handling
+5. **Test thoroughly**
+6. **Submit a pull request**
+
+### Development Guidelines
+- **Component Structure**: Keep components small and focused
+- **State Management**: Use React hooks for local state
+- **Styling**: Use Tailwind utility classes
+- **Accessibility**: Include proper ARIA labels and keyboard support
+- **Performance**: Optimize re-renders and bundle size
+
+## 📝 Changelog
+
+### Version 1.0.0 (Current)
+- ✅ Multi-timezone clock widget
+- ✅ Smart date tracking with age calculation
+- ✅ Advanced task manager with priorities
+- ✅ Rich text notes editor
+- ✅ Quick links dashboard
+- ✅ Import/Export functionality
+- ✅ Beautiful glassmorphism UI
+
+### Upcoming Features
+- 🔄 Cloud sync capabilities
+- 🔄 Weather widget integration
+- 🔄 Calendar view for dates
+- 🔄 Task categories and tags
+- 🔄 Themes and customization options
+- 🔄 Keyboard shortcuts
+
+## 🐛 Bug Reports & Feature Requests
+
+Found a bug or have a feature idea? We'd love to hear from you!
+
+- **Bug Reports**: [Create an issue](https://github.com/your-username/productivity-dashboard-extension/issues)
+- **Feature Requests**: [Start a discussion](https://github.com/your-username/productivity-dashboard-extension/discussions)
+- **Questions**: Check our [FAQ](./FAQ.md) or create a discussion
 
 ## 📄 License
 
-This scaffold is provided as-is for educational and commercial use.
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **React Quill** team for the excellent rich text editor
+- **Tailwind CSS** for the utility-first CSS framework
+- **Lucide** for the beautiful icon set
+- **Chrome Extensions team** for the excellent documentation
+- **Open source community** for inspiration and feedback
+
+## 🌟 Show Your Support
+
+If you find this extension helpful:
+- ⭐ **Star the repository**
+- 📢 **Share with friends and colleagues**
+- 🐛 **Report bugs and suggest features**
+- 💝 **Contribute to the codebase**
+
+---
+
+**Made with ❤️ for productivity enthusiasts**
+
+Transform your new tab into a productivity powerhouse! 🚀
