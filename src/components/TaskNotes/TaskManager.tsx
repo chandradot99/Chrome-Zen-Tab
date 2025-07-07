@@ -1,11 +1,12 @@
-import React, { useState, useRef } from 'react';
-import { CheckSquare, Square, Plus, RotateCcw } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { CheckSquare, Square, Plus, RotateCcw, Star } from 'lucide-react';
 
 interface Task {
   id: string;
   text: string;
   completed: boolean;
   createdAt: number;
+  priority?: boolean;
 }
 
 interface TaskManagerProps {
@@ -16,7 +17,17 @@ interface TaskManagerProps {
 const TaskManager: React.FC<TaskManagerProps> = ({ tasks, onTasksChange }) => {
   const [newTaskText, setNewTaskText] = useState<string>('');
   const [showTaskInput, setShowTaskInput] = useState<boolean>(false);
+  const [recentlyCompleted, setRecentlyCompleted] = useState<string | null>(null);
+  const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all');
   const taskInputRef = useRef<HTMLInputElement>(null);
+
+  // Clear recently completed animation after delay
+  useEffect(() => {
+    if (recentlyCompleted) {
+      const timer = setTimeout(() => setRecentlyCompleted(null), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [recentlyCompleted]);
 
   const addTask = (): void => {
     if (!newTaskText.trim()) return;
@@ -25,7 +36,8 @@ const TaskManager: React.FC<TaskManagerProps> = ({ tasks, onTasksChange }) => {
       id: Date.now().toString(),
       text: newTaskText.trim(),
       completed: false,
-      createdAt: Date.now()
+      createdAt: Date.now(),
+      priority: false
     };
 
     const updatedTasks = [...tasks, newTask];
@@ -35,9 +47,23 @@ const TaskManager: React.FC<TaskManagerProps> = ({ tasks, onTasksChange }) => {
   };
 
   const toggleTask = (taskId: string): void => {
+    const task = tasks.find(t => t.id === taskId);
+    if (task && !task.completed) {
+      setRecentlyCompleted(taskId);
+    }
+    
     const updatedTasks = tasks.map(task => 
       task.id === taskId 
         ? { ...task, completed: !task.completed }
+        : task
+    );
+    onTasksChange(updatedTasks);
+  };
+
+  const togglePriority = (taskId: string): void => {
+    const updatedTasks = tasks.map(task => 
+      task.id === taskId 
+        ? { ...task, priority: !task.priority }
         : task
     );
     onTasksChange(updatedTasks);
@@ -84,13 +110,41 @@ const TaskManager: React.FC<TaskManagerProps> = ({ tasks, onTasksChange }) => {
     const total = tasks.length;
     const completed = tasks.filter(task => task.completed).length;
     const pending = total - completed;
-    return { total, completed, pending };
+    const priority = tasks.filter(task => task.priority && !task.completed).length;
+    return { total, completed, pending, priority };
+  };
+
+  const getFilteredTasks = () => {
+    let filtered = tasks;
+    
+    switch (filter) {
+      case 'pending':
+        filtered = tasks.filter(task => !task.completed);
+        break;
+      case 'completed':
+        filtered = tasks.filter(task => task.completed);
+        break;
+      default:
+        filtered = tasks;
+    }
+
+    // Sort: priority first, then by completion status, then by creation date
+    return filtered.sort((a, b) => {
+      if (a.completed !== b.completed) {
+        return a.completed ? 1 : -1; // Incomplete tasks first
+      }
+      if (a.priority !== b.priority) {
+        return a.priority ? -1 : 1; // Priority tasks first
+      }
+      return a.createdAt - b.createdAt; // Older tasks first
+    });
   };
 
   const taskStats = getTaskStats();
+  const filteredTasks = getFilteredTasks();
 
   const renderTaskInput = () => (
-    <div className="flex space-x-3">
+    <div className="flex space-x-2">
       <input
         ref={taskInputRef}
         type="text"
@@ -112,23 +166,49 @@ const TaskManager: React.FC<TaskManagerProps> = ({ tasks, onTasksChange }) => {
           setShowTaskInput(false);
           setNewTaskText('');
         }}
-        className="px-4 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-colors font-medium"
+        className="px-3 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-colors"
       >
-        Cancel
+        ✕
       </button>
     </div>
   );
 
   return (
-    <div className="h-[320px] flex flex-col">
+    <div className="h-[420px] flex flex-col">
       {/* Header Actions */}
       <div className="flex items-center justify-between mb-4">
-        <div className="text-white/60 text-sm drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
-          {taskStats.total > 0 
-            ? `${taskStats.completed}/${taskStats.total} completed • ${taskStats.pending} pending`
-            : 'No tasks yet'
-          }
+        <div className="flex items-center space-x-4">
+          <div className="text-white/60 text-sm drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
+            {taskStats.total > 0 
+              ? `${taskStats.completed}/${taskStats.total} done ${taskStats.priority > 0 ? `• ${taskStats.priority} priority` : ''}`
+              : 'No tasks yet'
+            }
+          </div>
+          
+          {/* Filter Tabs */}
+          {taskStats.total > 0 && (
+            <div className="flex bg-white/5 rounded-lg p-1">
+              {[
+                { key: 'all', label: 'All', count: taskStats.total },
+                { key: 'pending', label: 'Todo', count: taskStats.pending },
+                { key: 'completed', label: 'Done', count: taskStats.completed }
+              ].map(({ key, label, count }) => (
+                <button
+                  key={key}
+                  onClick={() => setFilter(key as typeof filter)}
+                  className={`px-2 py-1 rounded text-xs transition-all ${
+                    filter === key 
+                      ? 'bg-white/20 text-white' 
+                      : 'text-white/60 hover:text-white/80'
+                  }`}
+                >
+                  {label} {count > 0 && `(${count})`}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
+        
         <div className="flex items-center space-x-2">
           {taskStats.completed > 0 && (
             <button
@@ -174,59 +254,91 @@ const TaskManager: React.FC<TaskManagerProps> = ({ tasks, onTasksChange }) => {
         ) : (
           /* Tasks List */
           <div className="flex-1 overflow-hidden flex flex-col">
-            <div className="flex-1 overflow-y-auto space-y-3 pr-2">
-              {tasks.map((task) => (
-                <div 
-                  key={task.id}
-                  className="group flex items-center justify-between px-4 py-0.5 rounded-xl hover:bg-white/5 transition-colors"
-                >
-                  <div className="flex items-center space-x-4 flex-1 min-w-0">
-                    <button
-                      onClick={() => toggleTask(task.id)}
-                      className="text-white/70 hover:text-white transition-colors flex-shrink-0"
-                    >
-                      {task.completed ? (
-                        <CheckSquare size={20} className="text-green-400" />
-                      ) : (
-                        <Square size={20} />
-                      )}
-                    </button>
-                    <span 
-                      className={`flex-1 text-base transition-all duration-200 ${
-                        task.completed 
-                          ? 'line-through text-white/50' 
-                          : 'text-white/90'
-                      } drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]`}
-                      title={task.text}
-                    >
-                      {task.text}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => deleteTask(task.id)}
-                    className="opacity-0 group-hover:opacity-100 text-white/40 hover:text-red-400 transition-all duration-200 p-2 flex-shrink-0 ml-3"
-                    title="Delete task"
-                  >
-                    ✕
-                  </button>
+            {filteredTasks.length === 0 ? (
+              <div className="flex-1 flex items-center justify-center">
+                <div className="text-white/50 text-sm">
+                  No {filter} tasks
                 </div>
-              ))}
-            </div>
+              </div>
+            ) : (
+              <div className="flex-1 overflow-y-auto space-y-2 pr-2">
+                {filteredTasks.map((task) => (
+                  <div 
+                    key={task.id}
+                    className={`group flex items-center justify-between px-3 py-2 rounded-xl hover:bg-white/5 transition-all duration-300 ${
+                      recentlyCompleted === task.id ? 'bg-green-500/20 animate-pulse' : ''
+                    } ${task.priority && !task.completed ? 'border-l-2 border-yellow-400/50' : ''}`}
+                  >
+                    <div className="flex items-center space-x-3 flex-1 min-w-0">
+                      <button
+                        onClick={() => toggleTask(task.id)}
+                        className="text-white/70 hover:text-white transition-colors flex-shrink-0"
+                      >
+                        {task.completed ? (
+                          <CheckSquare size={20} className="text-green-400" />
+                        ) : (
+                          <Square size={20} />
+                        )}
+                      </button>
+                      
+                      <div className="flex items-center space-x-2 flex-1 min-w-0">
+                        <span 
+                          className={`flex-1 text-sm transition-all duration-200 truncate ${
+                            task.completed 
+                              ? 'line-through text-white/50' 
+                              : 'text-white/90'
+                          } drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]`}
+                          title={task.text}
+                        >
+                          {task.text}
+                        </span>
+                        
+                        {!task.completed && (
+                          <button
+                            onClick={() => togglePriority(task.id)}
+                            className={`flex-shrink-0 transition-colors ${
+                              task.priority 
+                                ? 'text-yellow-400 hover:text-yellow-300' 
+                                : 'text-white/40 hover:text-yellow-400'
+                            }`}
+                            title={task.priority ? "Remove priority" : "Mark as priority"}
+                          >
+                            <Star size={14} fill={task.priority ? "currentColor" : "none"} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                      <button
+                        onClick={() => deleteTask(task.id)}
+                        className="text-white/40 hover:text-red-400 transition-colors p-1.5 rounded flex-shrink-0"
+                        title="Delete task"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Add Task Section */}
-            <div className="mt-4 pt-4 border-t border-white/10 flex-shrink-0">
-              {showTaskInput ? (
-                renderTaskInput()
-              ) : (
-                <button
-                  onClick={startAddingTask}
-                  className="w-full py-3 px-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white/70 hover:text-white transition-all duration-300 flex items-center justify-center space-x-2"
-                >
-                  <Plus size={18} />
-                  <span className="drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">Add New Task</span>
-                </button>
-              )}
-            </div>
+            {filter !== 'completed' && (
+              <div className="mt-3 pt-3 border-t border-white/10 flex-shrink-0">
+                {showTaskInput ? (
+                  renderTaskInput()
+                ) : (
+                  <button
+                    onClick={startAddingTask}
+                    className="w-full py-2.5 px-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white/70 hover:text-white transition-all duration-300 flex items-center justify-center space-x-2"
+                  >
+                    <Plus size={16} />
+                    <span className="drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)] text-sm">Add Task</span>
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -236,11 +348,6 @@ const TaskManager: React.FC<TaskManagerProps> = ({ tasks, onTasksChange }) => {
             {renderTaskInput()}
           </div>
         )}
-      </div>
-
-      {/* Status */}
-      <div className="mt-4 text-sm text-white/40 drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
-        {`${taskStats.total} tasks total`}
       </div>
     </div>
   );

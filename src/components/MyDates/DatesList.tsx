@@ -102,7 +102,7 @@ const DatesList: React.FC<DatesListProps> = ({ dates, onDelete }) => {
           <div className="flex items-center justify-between">
             <div className="flex items-center flex-1 min-w-0">
               <div className="flex items-center mr-3 flex-shrink-0">
-                <span className="text-md">{getTypeEmoji(date.type)}</span>
+                <span className="text-lg">{getTypeEmoji(date.type)}</span>
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-white font-medium drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)] truncate">

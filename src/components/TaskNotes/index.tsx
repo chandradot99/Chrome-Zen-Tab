@@ -9,6 +9,7 @@ interface Task {
   text: string;
   completed: boolean;
   createdAt: number;
+  priority?: boolean;
 }
 
 type ActiveTab = 'tasks' | 'notes';
@@ -18,7 +19,6 @@ const TabbedTasksNotes: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [notes, setNotes] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [lastSaved, setLastSaved] = useState<Date>(new Date());
 
   // Load data on mount
   useEffect(() => {
@@ -27,10 +27,9 @@ const TabbedTasksNotes: React.FC = () => {
 
   // Auto-save notes with debounce
   useEffect(() => {
-    if (!isLoading) {
+    if (!isLoading && notes.trim()) {
       const saveTimer = setTimeout(() => {
         saveNotes(notes);
-        setLastSaved(new Date());
       }, 1000);
       
       return () => clearTimeout(saveTimer);
@@ -41,9 +40,6 @@ const TabbedTasksNotes: React.FC = () => {
   useEffect(() => {
     if (!isLoading) {
       saveTasks(tasks);
-      if (tasks.length > 0) {
-        setLastSaved(new Date());
-      }
     }
   }, [tasks, isLoading]);
 
@@ -88,18 +84,11 @@ const TabbedTasksNotes: React.FC = () => {
     const total = tasks.length;
     const completed = tasks.filter(task => task.completed).length;
     const pending = total - completed;
-    return { total, completed, pending };
-  };
-
-  const getNotesStats = () => {
-    const lines = notes.split('\n').filter(line => line.trim()).length;
-    const words = notes.trim() ? notes.trim().split(/\s+/).length : 0;
-    const chars = notes.length;
-    return { lines, words, chars };
+    const priority = tasks.filter(task => task.priority && !task.completed).length;
+    return { total, completed, pending, priority };
   };
 
   const taskStats = getTaskStats();
-  const notesStats = getNotesStats();
 
   if (isLoading) {
     return (
@@ -113,7 +102,7 @@ const TabbedTasksNotes: React.FC = () => {
 
   return (
     <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl p-4 shadow-2xl">
-      {/* Header with Toggle */}
+      {/* Clean Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
           <div className={`w-8 h-8 rounded-xl flex items-center justify-center mr-3 ${
@@ -129,49 +118,39 @@ const TabbedTasksNotes: React.FC = () => {
           </div>
           <div>
             <h2 className="text-md font-semibold text-white drop-shadow-lg [text-shadow:_0_2px_8px_rgb(0_0_0_/_40%)]">
-              {activeTab === 'tasks' ? 'Daily Tasks' : 'Quick Notes'}
+              {activeTab === 'tasks' ? 'Tasks' : 'Notes'}
             </h2>
-            <div className="text-white/60 text-xs drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
-              {activeTab === 'tasks' 
-                ? `${taskStats.pending} pending • ${taskStats.completed} completed`
-                : `${notesStats.words} words • ${notesStats.lines} lines`
-              }
-            </div>
           </div>
         </div>
 
-        {/* Compact Toggle Switch */}
-        <div className="flex bg-white/10 rounded-lg p-0.5">
+        {/* Subtle Toggle */}
+        <div className="flex bg-white/5 rounded-xl p-1">
           <button
             onClick={() => setActiveTab('tasks')}
-            className={`px-3 py-2 rounded-md font-medium transition-all duration-200 flex items-center space-x-1.5 text-sm ${
+            className={`px-4 py-2 rounded-lg transition-all duration-300 flex items-center space-x-2 text-sm ${
               activeTab === 'tasks'
-                ? 'bg-white/20 text-white shadow-lg'
-                : 'text-white/70 hover:text-white hover:bg-white/5'
+                ? 'bg-white/10 text-white'
+                : 'text-white/50 hover:text-white/70 hover:bg-white/5'
             }`}
           >
             <CheckSquare size={14} />
-            <span className="drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">Tasks</span>
+            <span>Tasks</span>
             {taskStats.pending > 0 && (
-              <span className="bg-orange-500/80 text-white text-xs px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
-                {taskStats.pending}
-              </span>
+              <span className="w-2 h-2 bg-orange-400/80 rounded-full"></span>
             )}
           </button>
           <button
             onClick={() => setActiveTab('notes')}
-            className={`px-3 py-2 rounded-md font-medium transition-all duration-200 flex items-center space-x-1.5 text-sm ${
+            className={`px-4 py-2 rounded-lg transition-all duration-300 flex items-center space-x-2 text-sm ${
               activeTab === 'notes'
-                ? 'bg-white/20 text-white shadow-lg'
-                : 'text-white/70 hover:text-white hover:bg-white/5'
+                ? 'bg-white/10 text-white'
+                : 'text-white/50 hover:text-white/70 hover:bg-white/5'
             }`}
           >
             <Edit3 size={14} />
-            <span className="drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">Notes</span>
-            {notesStats.words > 0 && (
-              <span className="bg-blue-500/80 text-white text-xs px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
-                {notesStats.words}
-              </span>
+            <span>Notes</span>
+            {notes.trim() && (
+              <span className="w-2 h-2 bg-blue-400/80 rounded-full"></span>
             )}
           </button>
         </div>
@@ -183,31 +162,6 @@ const TabbedTasksNotes: React.FC = () => {
       ) : (
         <NotesEditor notes={notes} onNotesChange={setNotes} />
       )}
-
-      {/* Status Bar */}
-      <div className="flex justify-between items-center mt-4 text-sm">
-        <div className="flex items-center text-white/40 drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
-          <div className={`w-2 h-2 rounded-full mr-2 ${
-            Date.now() - lastSaved.getTime() < 2000 ? 'bg-green-400 animate-pulse' : 'bg-white/30'
-          }`}></div>
-          <span>
-            {Date.now() - lastSaved.getTime() < 2000 
-              ? 'Saved' 
-              : 'Auto-saved'
-            }
-          </span>
-        </div>
-      </div>
-
-      {/* Helper Text */}
-      <div className="mt-3 text-center">
-        <div className="text-white/30 text-xs drop-shadow-lg [text-shadow:_0_2px_6px_rgb(0_0_0_/_40%)]">
-          {activeTab === 'tasks' 
-            ? 'Press Enter to add tasks, Escape to cancel • Click checkboxes to mark complete'
-            : 'Your notes auto-save as you type • Switch to Tasks tab to manage your todos'
-          }
-        </div>
-      </div>
     </div>
   );
 };
